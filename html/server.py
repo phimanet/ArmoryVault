@@ -19,6 +19,8 @@ import base64
 import threading
 import ssl
 import smtplib
+import zipfile
+import io
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -654,6 +656,67 @@ class RequestHandler(BaseHTTPRequestHandler):
             backups = sorted([f for f in os.listdir(BACKUPS_DIR) if f.startswith("firearms_") and f.endswith(".json")], reverse=True)
             self.send_json(200, {"success": True, "backups": backups})
             return
+
+        if path == "/api/export-archive":
+            try:
+                zip_buffer = io.BytesIO()
+                db = load_db()
+                now_str = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+                filename = f"ArmoryVault_Full_Backup_{now_str}.zip"
+
+                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+                    # 1. Main database
+                    with db_lock:
+                        if os.path.exists(DB_FILE):
+                            zf.write(DB_FILE, arcname="database/firearms.json")
+                        else:
+                            zf.writestr("database/firearms.json", json.dumps(db, indent=2))
+
+                    # 2. Photos
+                    if os.path.exists(UPLOADS_DIR):
+                        for root, _, files in os.walk(UPLOADS_DIR):
+                            for f in files:
+                                if f.startswith("."):
+                                    continue
+                                full_p = os.path.join(root, f)
+                                arc_p = os.path.join("photos", f)
+                                zf.write(full_p, arcname=arc_p)
+
+                    # 3. Documents & DROS paperwork
+                    if os.path.exists(DOCS_DIR):
+                        for root, _, files in os.walk(DOCS_DIR):
+                            for f in files:
+                                if f.startswith("."):
+                                    continue
+                                full_p = os.path.join(root, f)
+                                arc_p = os.path.join("documents", f)
+                                zf.write(full_p, arcname=arc_p)
+
+                    # 4. Manifest metadata
+                    manifest = {
+                        "project": "ArmoryVault",
+                        "exportedAt": datetime.now(timezone.utc).isoformat() + "Z",
+                        "firearmsCount": len(db.get("firearms", [])),
+                        "ccwHolder": db.get("ccw", {}).get("holderName", ""),
+                        "photosCount": len(os.listdir(UPLOADS_DIR)) if os.path.exists(UPLOADS_DIR) else 0,
+                        "documentsCount": len(os.listdir(DOCS_DIR)) if os.path.exists(DOCS_DIR) else 0,
+                        "version": "1.0"
+                    }
+                    zf.writestr("manifest.json", json.dumps(manifest, indent=2))
+
+                zip_bytes = zip_buffer.getvalue()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+                self.send_header("Content-Length", str(len(zip_bytes)))
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.send_cors_headers()
+                self.end_headers()
+                self.wfile.write(zip_bytes)
+                return
+            except Exception as e:
+                self.send_error_json(500, f"Error generating export archive: {str(e)}")
+                return
 
         self.send_error_json(404, "Endpoint not found")
 
