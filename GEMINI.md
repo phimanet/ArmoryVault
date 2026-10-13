@@ -4,8 +4,9 @@
 ## Project Specifications & Repository
 - **Dedicated Repository**: `https://github.com/phimanet/ArmoryVault.git` on branch `main`.
 - **Local Directory**: `/home/phimane/Documents/GitHub/DockerMonsterWebServer/ArmoryVault`
-- **Host Directory**: `/docker/ArmoryVault`
+- **Host Directory**: `/docker/FirearmsInventory` (symlink/mount target)
 - **Live URL**: `http://192.168.72.10:8186`
+- **Mandatory Git Save & Push Rule**: Always save, commit, and push (`git push origin main`) immediately upon completing any task, changes, or feature updates, then ensure the live server is updated. Never conclude a turn with uncommitted or unpushed changes.
 
 ## Universal Data Persistence & Anti-Data-Loss Rule
 - **Isolated Storage Volumes**: All database records (`/docker/ArmoryVault/data/firearms.json`) and uploaded media (`/docker/ArmoryVault/uploads/photos/`, `/docker/ArmoryVault/uploads/documents/`) **MUST ALWAYS** live in dedicated root host directories `./data:/app/data` and `./uploads:/app/uploads`.
