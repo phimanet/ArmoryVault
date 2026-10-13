@@ -70,3 +70,19 @@
   - Added documents manager section in the firearm form modal with camera scan button, file upload button, and per-document title and category editing.
 - **Git Deployment Pipeline**:
   - Committed and pushed to `phimanet/FirearmsInventory` (`origin main`) and pulled on host `192.168.72.10:8186`.
+
+## Individual Firearm Detail Popout UI & Mobile/iPad Optimization (2026-10-13)
+- **Delete Button Repositioning & Safe Separation**:
+  - Relocated `#deleteDetailBtn` to the far left of the detail header actions bar.
+  - Inserted a visual separator divider between the destructive Delete action and standard edit/media actions to prevent accidental deletion.
+- **Explicit Exit Button**:
+  - Replaced the generic small `✕` close icon with an explicit labeled **`Exit`** button (`#closeDetailModalBtn.btn-exit`) with close icon and text.
+  - Positioned safely on the far right of the action bar.
+- **iPhone, iPad & Tablet Responsive Layout**:
+  - **Mobile (< 768px)**: Header reflows smoothly into stacked sections so titles and buttons never overlap. Action buttons have comfortable touch targets (`min-height: 38px`), with Delete ordered on the left and Exit anchored on the right.
+  - **iPad & Tablets (769px - 1024px)**: Modal scales to `92vw–95vw` / `92vh`, specifications matrix renders in a balanced 3-column grid, and photo inspection adjusts to `340px`.
+  - **Extra Compact Screens (< 480px)**: Specification matrix shifts to a clean 1-column stack, thumbnail gallery wraps cleanly, and toolbar buttons distribute into touch-friendly rows.
+  - **Responsive Tables**: Wrapped Accessories, Purchasing Dealers, Maintenance, and Documents/DROS tables in `.table-responsive` horizontal scrolling containers with touch momentum scrolling.
+- **Git Deployment Pipeline**:
+  - Committed and pushed to `phimanet/ArmoryVault` (`origin main`).
+  - Pulled and verified live on production container host `http://192.168.72.10:8186`.
