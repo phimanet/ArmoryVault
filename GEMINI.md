@@ -14,6 +14,10 @@
   - The backend runs automated rolling database snapshots every 10 minutes (`/data/backups/firearms_YYYYMMDD_HHMMSS.json`).
   - The UI features an explicit **Save / Snapshot** button in the header for on-demand persistent snapshots.
   - Data must survive server reboots, container recreations, Docker updates, and code pushes.
+- **1-Click Full Archive Export (`.zip`) & Rebuild Portability**:
+  - The backend microservice implements `GET /api/export-archive` bundling all firearm records (`database/firearms.json`), weapon photos (`photos/`), and DROS/receipt documents (`documents/`) into a single ZIP with an export manifest.
+  - The UI features an explicit **`📦 Export Archive`** button in the header for 1-click download and off-site cloud backup (Google Drive).
+  - In the event of a system rebuild or migration, the vault must be fully restorable from the exported archive.
 
 ## Privacy & Security Posture
 - **Serial Privacy Masking**: Serial numbers must be masked by default in the UI (`••••••••` / `***-***-1234`) with a quick global toggle or per-item unmask icon for discreet screen viewing and screenshots.
