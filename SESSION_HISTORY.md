@@ -86,3 +86,19 @@
 - **Git Deployment Pipeline**:
   - Committed and pushed to `phimanet/ArmoryVault` (`origin main`).
   - Pulled and verified live on production container host `http://192.168.72.10:8186`.
+
+## CCW Class Location & Configurable Reminder Frequencies + 90-Day Daily Alerts (2026-10-13)
+- **CCW Class Company & Address Location**:
+  - Added dedicated fields `trainingCompany` and `trainingAddress` in CCW step 2 checklist.
+  - Included company and address directly in the responsive HTML email template when CCW renewal notifications are dispatched.
+- **Customizable Milestone Reminder Frequencies**:
+  - Added reminder frequency selectors for:
+    - **LiveScan Fingerprinting**: Daily, Every 2 Days, Every 3 Days, Weekly, Every 2 Weeks, Monthly.
+    - **CCW Renewal Class & Qualification**: Daily, Every 2 Days, Every 3 Days, Weekly, Every 2 Weeks, Monthly.
+    - **Upload Documents to SDSO (Permitium)**: Daily, Every 2 Days, Every 3 Days, Weekly, Every 2 Weeks, Monthly.
+- **90-Day Daily Alert Policy & Stop Control**:
+  - Automated daily email reminders beginning 90 days before CCW expiration until pending milestones are completed.
+  - Added explicit check-box toggle: `Check mark here to STOP 90-day daily emails` (`stopAlerts90Days`), allowing manual override to halt alerts at any time.
+- **Git Deployment Pipeline**:
+  - Committed and pushed to `phimanet/ArmoryVault` (`origin main`).
+  - Pulled and verified live on production container host `http://192.168.72.10:8186`.

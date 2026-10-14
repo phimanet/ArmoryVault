@@ -179,13 +179,19 @@ def get_seed_data():
             "liveScanCompleted": False,
             "liveScanDate": "",
             "liveScanNotes": "",
+            "liveScanReminderFreq": "weekly",
             "trainingCompleted": False,
             "trainingDate": "",
             "trainingHours": 8,
             "trainingNotes": "",
+            "trainingCompany": "",
+            "trainingAddress": "",
+            "trainingReminderFreq": "weekly",
             "sdsoUploadCompleted": False,
             "sdsoUploadDate": "",
             "sdsoUploadNotes": "",
+            "uploadReminderFreq": "weekly",
+            "stopAlerts90Days": False,
             "checklistNotes": "",
             "importantLinks": [
                 {"title": "SDSO Permitium Portal", "url": "https://sandiegoca.permitium.com/ccw/start", "category": "Sheriff Portal"},
@@ -326,6 +332,17 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
     training_icon = "✅ Completed" if ccw.get("trainingCompleted") else "⚠️ Pending Action"
     upload_icon = "✅ Uploaded" if ccw.get("sdsoUploadCompleted") else "⚠️ Pending Action (Deadline: 90 Days Prior)"
 
+    training_company = ccw.get("trainingCompany") or ""
+    training_address = ccw.get("trainingAddress") or ""
+    class_location_html = ""
+    if training_company or training_address:
+        loc_parts = []
+        if training_company:
+            loc_parts.append(f"<strong>Company:</strong> {training_company}")
+        if training_address:
+            loc_parts.append(f"<strong>Location/Address:</strong> {training_address}")
+        class_location_html = f"""<div style="margin-top:6px; font-size:12px; color:#93c5fd; background:rgba(59,130,246,0.1); padding:6px 10px; border-radius:4px; border:1px solid rgba(59,130,246,0.25);">{' &bull; '.join(loc_parts)}</div>"""
+
     header_color = "#f43f5e" if days_left <= 60 else ("#f59e0b" if days_left <= 90 else "#0284c7")
     badge_text = "URGENT ACTION REQUIRED" if days_left <= 60 else ("CRITICAL RENEWAL WINDOW" if days_left <= 90 else "CCW RENEWAL NOTICE")
 
@@ -396,6 +413,7 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
                   <td style="padding:12px; background-color:#1e293b; border-bottom:1px solid #334155;">
                     <div style="font-size:14px; font-weight:700; color:#ffffff;">2. CCW Renewal Class & Qualification</div>
                     <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Complete approved 8-hour CCW retraining course and live-fire shooting qualification.</div>
+                    {class_location_html}
                     <div style="margin-top:6px; font-size:12px; font-weight:600; color:{'#34d399' if ccw.get('trainingCompleted') else '#f59e0b'};">{training_icon}</div>
                   </td>
                 </tr>
@@ -420,7 +438,7 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
           <tr>
             <td style="background-color:#0f172a; border-top:1px solid #1e293b; padding:16px 24px; text-align:center; font-size:12px; color:#64748b;">
               Armory Vault Automated CCW Compliance System • Live on Port 8186<br>
-              Automated notifications occur at 120, 90, 60, and 30 days prior to permit expiration.
+              Daily alerts active 90 days prior to expiration until checked completed.
             </td>
           </tr>
         </table>
@@ -433,7 +451,10 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
 
 def check_and_send_ccw_reminders(force=False, test_recipient=None):
     """
-    Checks CCW expiration against 120, 90, 60, 30-day thresholds and dispatches Gmail notifications.
+    Checks CCW expiration and milestone pending status to dispatch email reminders.
+    Sends daily emails starting 90 days prior to CCW expiration until all pending milestones
+    are check-marked as completed (or until stopAlerts90Days is checked / email alerts disabled).
+    Also supports custom frequencies for LiveScan, Class, and Upload milestones.
     """
     db = load_db()
     ccw = db.get("ccw", {})
@@ -457,22 +478,70 @@ def check_and_send_ccw_reminders(force=False, test_recipient=None):
 
     recipient = test_recipient or ccw.get("recipientEmail") or "phimane@gmail.com"
 
-    # Threshold checks
+    # Status checkmarks
+    livescan_done = Boolean(ccw.get("liveScanCompleted")) if 'Boolean' in globals() else bool(ccw.get("liveScanCompleted"))
+    training_done = bool(ccw.get("trainingCompleted"))
+    upload_done = bool(ccw.get("sdsoUploadCompleted"))
+    all_done = livescan_done and training_done and upload_done
+    stop_90_days = bool(ccw.get("stopAlerts90Days", False))
+
     should_send = force
     trigger_reason = "Manual Test / Trigger" if force else ""
 
     if not force:
-        # Cadence: 120 days, and every 30 days thereafter (120, 90, 60, 30, and <= 15)
-        # Avoid duplicate sending on the same milestone day
-        history = ccw.get("alertHistory", [])
-        already_sent_days = [h.get("daysLeft") for h in history if h.get("date") == today.isoformat()]
+        # Check if already sent today
+        last_sent_iso = ccw.get("lastAlertSent")
+        already_sent_today = False
+        if last_sent_iso:
+            try:
+                last_sent_date = datetime.fromisoformat(last_sent_iso.replace("Z", "+00:00")).date()
+                if last_sent_date == today:
+                    already_sent_today = True
+            except Exception:
+                pass
 
-        if days_left <= 120 and days_left > 0:
-            if days_left not in already_sent_days:
-                # Check 120, 90, 60, 30 or any 30-day interval
-                if days_left in [120, 90, 60, 30] or (days_left < 30 and days_left % 7 == 0) or days_left == 1:
+        if not already_sent_today:
+            # RULE 1: Daily reminders starting 90 days prior to CCW expiration until user check-marks to stop
+            if days_left <= 90 and days_left > 0:
+                if not stop_90_days and not all_done:
                     should_send = True
-                    trigger_reason = f"{days_left}-Day Expiration Milestone"
+                    trigger_reason = f"Daily 90-Day Renewal Notice ({days_left} Days Remaining)"
+
+            # RULE 2: Configurable reminder frequencies for milestones (LiveScan, Class, Upload)
+            if not should_send and days_left > 0:
+                # Milestone reminder frequencies: 'daily', 'every_2_days', 'every_3_days', 'weekly', 'biweekly', 'monthly'
+                freq_days_map = {
+                    "daily": 1,
+                    "every_2_days": 2,
+                    "every_3_days": 3,
+                    "weekly": 7,
+                    "biweekly": 14,
+                    "monthly": 30
+                }
+
+                # Helper to check if milestone frequency matches today
+                def is_freq_due(freq_str, milestone_name):
+                    days_interval = freq_days_map.get(freq_str, 7)
+                    if days_interval == 1:
+                        return True
+                    # Check day interval based on days_left mod
+                    return (days_left % days_interval) == 0
+
+                ls_freq = ccw.get("liveScanReminderFreq", "weekly")
+                tr_freq = ccw.get("trainingReminderFreq", "weekly")
+                up_freq = ccw.get("uploadReminderFreq", "weekly")
+
+                pending_reasons = []
+                if not livescan_done and is_freq_due(ls_freq, "LiveScan"):
+                    pending_reasons.append("LiveScan Pending")
+                if not training_done and is_freq_due(tr_freq, "CCW Class"):
+                    pending_reasons.append("CCW Class Pending")
+                if not upload_done and is_freq_due(up_freq, "Doc Upload"):
+                    pending_reasons.append("Doc Upload Pending")
+
+                if pending_reasons and (days_left <= 120):
+                    should_send = True
+                    trigger_reason = f"Milestone Reminder: {', '.join(pending_reasons)} ({days_left} Days Left)"
 
     if should_send:
         subject = f"⚠️ CCW Renewal Alert: {days_left} Days Remaining Until Expiration ({exp_str})"
@@ -489,9 +558,8 @@ def check_and_send_ccw_reminders(force=False, test_recipient=None):
                 "recipient": recipient,
                 "reason": trigger_reason
             })
-            # Keep history to last 20
-            if len(ccw["alertHistory"]) > 20:
-                ccw["alertHistory"] = ccw["alertHistory"][-20:]
+            if len(ccw["alertHistory"]) > 30:
+                ccw["alertHistory"] = ccw["alertHistory"][-30:]
             save_db(db)
             return {"status": "sent", "daysLeft": days_left, "recipient": recipient, "result": result}
         else:
@@ -503,11 +571,12 @@ def ccw_reminder_worker():
     """Daily background worker monitoring CCW expiration and sending renewal emails."""
     while True:
         try:
-            # Check every 6 hours (21600 seconds)
-            time.sleep(21600)
+            # Check every 2 hours (7200 seconds) so daily alerts trigger reliably
             check_and_send_ccw_reminders(force=False)
+            time.sleep(7200)
         except Exception as e:
             print(f"[CCW WORKER] Error: {e}")
+            time.sleep(300)
 
 class RequestHandler(BaseHTTPRequestHandler):
     def is_origin_allowed(self, origin):

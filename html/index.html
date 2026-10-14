@@ -2027,7 +2027,7 @@
           <div style="display:flex; flex-direction:column; gap:12px;">
             <!-- Step 1: LiveScan -->
             <div class="ccw-step-card" id="stepCardLiveScan">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:12px;">
                   <div class="ccw-step-num">1</div>
                   <div>
@@ -2039,7 +2039,7 @@
                   <input type="checkbox" id="ccwLiveScanCompleted" style="width:16px; height:16px; accent-color:#10b981;"> Completed
                 </label>
               </div>
-              <div style="display:grid; grid-template-columns:180px 1fr; gap:10px;">
+              <div style="display:grid; grid-template-columns:180px 1fr 180px; gap:10px;">
                 <div>
                   <label class="form-label">Date Completed</label>
                   <input type="date" class="form-control" id="ccwLiveScanDate">
@@ -2048,12 +2048,23 @@
                   <label class="form-label">LiveScan ATI / Location Notes</label>
                   <input type="text" class="form-control" id="ccwLiveScanNotes" placeholder="ATI tracking number, livescan operator location...">
                 </div>
+                <div>
+                  <label class="form-label" style="color:#38bdf8;">Reminder Frequency</label>
+                  <select class="form-control" id="ccwLiveScanReminderFreq" style="border-color:rgba(56,189,248,0.4);">
+                    <option value="daily">Daily</option>
+                    <option value="every_2_days">Every 2 Days</option>
+                    <option value="every_3_days">Every 3 Days</option>
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="biweekly">Every 2 Weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <!-- Step 2: CCW Training -->
+            <!-- Step 2: CCW Training Class & Qualification -->
             <div class="ccw-step-card" id="stepCardTraining">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:12px;">
                   <div class="ccw-step-num">2</div>
                   <div>
@@ -2065,7 +2076,7 @@
                   <input type="checkbox" id="ccwTrainingCompleted" style="width:16px; height:16px; accent-color:#10b981;"> Completed
                 </label>
               </div>
-              <div style="display:grid; grid-template-columns:180px 100px 1fr; gap:10px;">
+              <div style="display:grid; grid-template-columns:180px 100px 1fr 180px; gap:10px;">
                 <div>
                   <label class="form-label">Class Date</label>
                   <input type="date" class="form-control" id="ccwTrainingDate">
@@ -2075,15 +2086,37 @@
                   <input type="number" class="form-control" id="ccwTrainingHours" min="1" max="24" value="8">
                 </div>
                 <div>
-                  <label class="form-label">Instructor / Academy / Range Notes</label>
-                  <input type="text" class="form-control" id="ccwTrainingNotes" placeholder="Certified Instructor name, range location, certificate #...">
+                  <label class="form-label">Instructor / Range Notes</label>
+                  <input type="text" class="form-control" id="ccwTrainingNotes" placeholder="Instructor name, certificate #, qualification details...">
+                </div>
+                <div>
+                  <label class="form-label" style="color:#38bdf8;">Reminder Frequency</label>
+                  <select class="form-control" id="ccwTrainingReminderFreq" style="border-color:rgba(56,189,248,0.4);">
+                    <option value="daily">Daily</option>
+                    <option value="every_2_days">Every 2 Days</option>
+                    <option value="every_3_days">Every 3 Days</option>
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="biweekly">Every 2 Weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Class Company & Address Location -->
+              <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:10px; margin-top:8px; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.08);">
+                <div>
+                  <label class="form-label" style="color:#93c5fd;">Training Company / Academy</label>
+                  <input type="text" class="form-control" id="ccwTrainingCompany" placeholder="e.g. San Diego Firearms Training Academy, PWG...">
+                </div>
+                <div>
+                  <label class="form-label" style="color:#93c5fd;">Class Location Address</label>
+                  <input type="text" class="form-control" id="ccwTrainingAddress" placeholder="e.g. 123 Training Blvd, Suite 100, San Diego, CA 92101">
                 </div>
               </div>
             </div>
 
             <!-- Step 3: SDSO Upload (90 Days Deadline) -->
             <div class="ccw-step-card urgent" id="stepCardSdsoUpload">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:12px;">
                   <div class="ccw-step-num" style="background:#f59e0b; color:#000;">3</div>
                   <div>
@@ -2095,7 +2128,7 @@
                   <input type="checkbox" id="ccwSdsoUploadCompleted" style="width:16px; height:16px; accent-color:#10b981;"> Uploaded
                 </label>
               </div>
-              <div style="display:grid; grid-template-columns:180px 1fr; gap:10px;">
+              <div style="display:grid; grid-template-columns:180px 1fr 180px; gap:10px;">
                 <div>
                   <label class="form-label">Upload Submission Date</label>
                   <input type="date" class="form-control" id="ccwSdsoUploadDate">
@@ -2103,6 +2136,17 @@
                 <div>
                   <label class="form-label">Permitium Application / Order Number</label>
                   <input type="text" class="form-control" id="ccwSdsoUploadNotes" placeholder="Permitium Order #, receipt confirmation, SDSO notes...">
+                </div>
+                <div>
+                  <label class="form-label" style="color:#38bdf8;">Reminder Frequency</label>
+                  <select class="form-control" id="ccwUploadReminderFreq" style="border-color:rgba(56,189,248,0.4);">
+                    <option value="daily" selected>Daily (Recommended)</option>
+                    <option value="every_2_days">Every 2 Days</option>
+                    <option value="every_3_days">Every 3 Days</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Every 2 Weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -2153,8 +2197,23 @@
               <label class="form-label">Automated Email Reminders</label>
               <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:4px;">
                 <input type="checkbox" id="ccwEmailAlertsEnabled" checked style="width:18px; height:18px; accent-color:#10b981;">
-                <span style="font-size:0.82rem; font-weight:600; color:#34d399;">Notify at 120, 90, 60, 30 days & monthly</span>
+                <span style="font-size:0.82rem; font-weight:600; color:#34d399;">Master Email Alerts Enabled</span>
               </label>
+            </div>
+            <!-- 90-Day Daily Alert Policy & Stop Toggle -->
+            <div class="form-group full" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:var(--radius-sm); padding:10px 14px; margin-top:4px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                  <div style="font-size:0.85rem; font-weight:700; color:#fbbf24;">📅 90-Day Daily Expiration Reminder Policy</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                    Emails are sent daily starting 90 days before expiration until you check-mark to stop or check all milestones completed.
+                  </div>
+                </div>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.82rem; font-weight:700; color:#f87171; background:rgba(244,63,94,0.12); padding:6px 12px; border-radius:6px; border:1px solid rgba(244,63,94,0.3);">
+                  <input type="checkbox" id="ccwStopAlerts90Days" style="width:16px; height:16px; accent-color:#f43f5e;">
+                  <span>Check mark here to STOP 90-day daily emails</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -4942,6 +5001,7 @@
       document.getElementById('ccwLiveScanCompleted').checked = Boolean(ccwData.liveScanCompleted);
       document.getElementById('ccwLiveScanDate').value = ccwData.liveScanDate || '';
       document.getElementById('ccwLiveScanNotes').value = ccwData.liveScanNotes || '';
+      document.getElementById('ccwLiveScanReminderFreq').value = ccwData.liveScanReminderFreq || 'weekly';
       updateStepCardStyle('stepCardLiveScan', ccwData.liveScanCompleted);
 
       // Populate Checklist 2: Training
@@ -4949,12 +5009,16 @@
       document.getElementById('ccwTrainingDate').value = ccwData.trainingDate || '';
       document.getElementById('ccwTrainingHours').value = ccwData.trainingHours || 8;
       document.getElementById('ccwTrainingNotes').value = ccwData.trainingNotes || '';
+      document.getElementById('ccwTrainingCompany').value = ccwData.trainingCompany || '';
+      document.getElementById('ccwTrainingAddress').value = ccwData.trainingAddress || '';
+      document.getElementById('ccwTrainingReminderFreq').value = ccwData.trainingReminderFreq || 'weekly';
       updateStepCardStyle('stepCardTraining', ccwData.trainingCompleted);
 
       // Populate Checklist 3: SDSO Upload
       document.getElementById('ccwSdsoUploadCompleted').checked = Boolean(ccwData.sdsoUploadCompleted);
       document.getElementById('ccwSdsoUploadDate').value = ccwData.sdsoUploadDate || '';
       document.getElementById('ccwSdsoUploadNotes').value = ccwData.sdsoUploadNotes || '';
+      document.getElementById('ccwUploadReminderFreq').value = ccwData.uploadReminderFreq || 'daily';
       updateStepCardStyle('stepCardSdsoUpload', ccwData.sdsoUploadCompleted);
 
       // Populate Permit Parameters & Email
@@ -4966,6 +5030,7 @@
       document.getElementById('ccwExpirationDate').value = ccwData.expirationDate || '';
       document.getElementById('ccwRecipientEmail').value = ccwData.recipientEmail || 'phimane@gmail.com';
       document.getElementById('ccwEmailAlertsEnabled').checked = Boolean(ccwData.emailAlertsEnabled);
+      document.getElementById('ccwStopAlerts90Days').checked = Boolean(ccwData.stopAlerts90Days);
 
       // Render firearms on CCW Permit
       renderCcwGunsTable();
@@ -5133,20 +5198,26 @@
         expirationDate: document.getElementById('ccwExpirationDate').value,
         recipientEmail: document.getElementById('ccwRecipientEmail').value.trim(),
         emailAlertsEnabled: document.getElementById('ccwEmailAlertsEnabled').checked,
+        stopAlerts90Days: document.getElementById('ccwStopAlerts90Days').checked,
 
         // Milestones
         liveScanCompleted: document.getElementById('ccwLiveScanCompleted').checked,
         liveScanDate: document.getElementById('ccwLiveScanDate').value,
         liveScanNotes: document.getElementById('ccwLiveScanNotes').value.trim(),
+        liveScanReminderFreq: document.getElementById('ccwLiveScanReminderFreq').value,
 
         trainingCompleted: document.getElementById('ccwTrainingCompleted').checked,
         trainingDate: document.getElementById('ccwTrainingDate').value,
         trainingHours: parseInt(document.getElementById('ccwTrainingHours').value) || 8,
         trainingNotes: document.getElementById('ccwTrainingNotes').value.trim(),
+        trainingCompany: document.getElementById('ccwTrainingCompany').value.trim(),
+        trainingAddress: document.getElementById('ccwTrainingAddress').value.trim(),
+        trainingReminderFreq: document.getElementById('ccwTrainingReminderFreq').value,
 
         sdsoUploadCompleted: document.getElementById('ccwSdsoUploadCompleted').checked,
         sdsoUploadDate: document.getElementById('ccwSdsoUploadDate').value,
         sdsoUploadNotes: document.getElementById('ccwSdsoUploadNotes').value.trim(),
+        uploadReminderFreq: document.getElementById('ccwUploadReminderFreq').value,
 
         // Important Links
         importantLinks: formCcwLinks.filter(l => (l.title && l.title.trim()) || (l.url && l.url.trim()))
