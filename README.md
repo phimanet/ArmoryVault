@@ -9,7 +9,7 @@ Armory Vault is a secure, responsive offline-first firearm asset management, com
 - **Inventory & Build Matrix**: Complete management of handguns, rifles, shotguns, suppressors/NFA items, mounted optics, lights, and weapon build accessories.
 - **Photo Studio & High-Res Cropping**: Multi-photo gallery, integrated Cropper.js framing tool (16:9, 3:2, 4:3, 1:1, Freeform), image rotation, and serial OCR scanner.
 - **Ownership Documents & DROS Vault**: PDF and photo storage for California DOJ DROS paperwork, dealer purchase receipts, bills of sale, and manufacturer warranty cards.
-- **CCW Compliance & Gmail Alerts**: San Diego County Sheriff's Department (SDSO) renewal milestone tracker (LiveScan, class qualification, 90-day Permitium submission) with automated SSL SMTP email alerts.
+- **CCW Compliance & Gmail Alerts**: San Diego County Sheriff's Department (SDSO) renewal milestone tracker (LiveScan, class qualification, 90-day CCW Pro submission) with automated SSL SMTP email alerts.
 - **Insurance Valuation Reports**: One-click insurance asset schedule generation with categorized valuation totals, serialized build breakdowns, and print/export formatting.
 - **Privacy & Security**: Instant serial number masking toggle for discreet display, RFC1918 local LAN & Tailscale CGNAT CORS security, and zero cloud dependency.
 - **Data Persistence**: Dedicated `./data` and `./uploads` volume mounts with automated rolling snapshots every 10 minutes and on-demand UI snapshots.

@@ -2007,6 +2007,10 @@
               Permit #: <strong id="ccwSummaryPermitNum" style="color:var(--text-main);">-</strong> &bull;
               Expires: <strong id="ccwSummaryExpDate" style="color:var(--text-main);">-</strong>
             </div>
+            <div style="margin-top:6px; display:inline-flex; align-items:center; gap:6px; background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.35); padding:3px 10px; border-radius:6px; font-size:0.78rem;">
+              <span style="color:#fb7185; font-weight:700;">📅 90-Day Upload Deadline:</span>
+              <strong id="ccwSummaryDeadline90" style="color:#fff;">Not Set</strong>
+            </div>
           </div>
           <div style="text-align:right;">
             <div class="ccw-days-count" id="ccwDaysRemainingVal" style="color:#fbbf24;">--</div>
@@ -2021,7 +2025,7 @@
             Critical Renewal Milestones (San Diego Sheriff Workflow)
           </h3>
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
-            Sequential compliance: <strong>(1) LiveScan fingerprinting</strong> must be submitted before class, <strong>(2) CCW training & qualification</strong> must be completed, then <strong>(3) all documents must be uploaded to Permitium 90 days before expiration</strong>.
+            Sequential compliance: <strong>(1) LiveScan fingerprinting</strong> must be submitted before class, <strong>(2) CCW training & qualification</strong> must be completed, then <strong>(3) all documents must be uploaded to CCW Pro 90 days before expiration</strong>.
           </p>
 
           <div style="display:flex; flex-direction:column; gap:12px;">
@@ -2076,7 +2080,7 @@
                   <input type="checkbox" id="ccwTrainingCompleted" style="width:16px; height:16px; accent-color:#10b981;"> Completed
                 </label>
               </div>
-              <div style="display:grid; grid-template-columns:180px 100px 1fr 180px; gap:10px;">
+              <div style="display:grid; grid-template-columns:160px 80px 1fr 200px; gap:10px;">
                 <div>
                   <label class="form-label">Class Date</label>
                   <input type="date" class="form-control" id="ccwTrainingDate">
@@ -2090,14 +2094,16 @@
                   <input type="text" class="form-control" id="ccwTrainingNotes" placeholder="Instructor name, certificate #, qualification details...">
                 </div>
                 <div>
-                  <label class="form-label" style="color:#38bdf8;">Reminder Frequency</label>
-                  <select class="form-control" id="ccwTrainingReminderFreq" style="border-color:rgba(56,189,248,0.4);">
-                    <option value="daily">Daily</option>
-                    <option value="every_2_days">Every 2 Days</option>
-                    <option value="every_3_days">Every 3 Days</option>
-                    <option value="weekly" selected>Weekly</option>
-                    <option value="biweekly">Every 2 Weeks</option>
-                    <option value="monthly">Monthly</option>
+                  <label class="form-label" style="color:#38bdf8;">⏰ Remind Before Class</label>
+                  <select class="form-control" id="ccwTrainingLeadTime" style="border-color:rgba(56,189,248,0.5);">
+                    <option value="1_day">1 Day Before</option>
+                    <option value="2_days">2 Days Before</option>
+                    <option value="3_days">3 Days Before</option>
+                    <option value="5_days">5 Days Before</option>
+                    <option value="1_week" selected>1 Week Before</option>
+                    <option value="2_weeks">2 Weeks Before</option>
+                    <option value="3_weeks">3 Weeks Before</option>
+                    <option value="1_month">1 Month Before</option>
                   </select>
                 </div>
               </div>
@@ -2120,8 +2126,11 @@
                 <div style="display:flex; align-items:center; gap:12px;">
                   <div class="ccw-step-num" style="background:#f59e0b; color:#000;">3</div>
                   <div>
-                    <div style="font-weight:700; font-size:0.95rem; color:#fbbf24;">Upload Documents to San Diego Sheriff (Permitium)</div>
-                    <div style="font-size:0.78rem; color:#fdba74;"><strong>CRITICAL DEADLINE:</strong> Must submit all documents & training certificates exactly 90 days before permit expires</div>
+                    <div style="font-weight:700; font-size:0.95rem; color:#fbbf24;">Upload Documents to San Diego Sheriff (CCW Pro)</div>
+                    <div style="font-size:0.78rem; color:#fdba74;">
+                      <strong>CRITICAL DEADLINE:</strong> Must submit all documents & certificates exactly 90 days before expiration:
+                      <span id="ccwStep3DeadlineBadge" style="background:rgba(244,63,94,0.25); color:#fff; padding:2px 8px; border-radius:4px; font-weight:800; margin-left:4px;">Not Set</span>
+                    </div>
                   </div>
                 </div>
                 <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:700; cursor:pointer; color:#34d399;">
@@ -2134,8 +2143,8 @@
                   <input type="date" class="form-control" id="ccwSdsoUploadDate">
                 </div>
                 <div>
-                  <label class="form-label">Permitium Application / Order Number</label>
-                  <input type="text" class="form-control" id="ccwSdsoUploadNotes" placeholder="Permitium Order #, receipt confirmation, SDSO notes...">
+                  <label class="form-label">CCW Pro Application / Order Number</label>
+                  <input type="text" class="form-control" id="ccwSdsoUploadNotes" placeholder="CCW Pro Order #, receipt confirmation, SDSO notes...">
                 </div>
                 <div>
                   <label class="form-label" style="color:#38bdf8;">Reminder Frequency</label>
@@ -2251,7 +2260,7 @@
                 <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
                 Important Links & Portals
               </h3>
-              <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">Save quick links for the Sheriff Permitium portal, LiveScan forms, training academies, and renewal documents.</p>
+              <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">Save quick links for the Sheriff CCW Pro portal, LiveScan forms, training academies, and renewal documents.</p>
             </div>
             <button type="button" class="btn btn-secondary" onclick="addCcwLinkRow()" style="font-size:0.75rem;">+ Add Link</button>
           </div>
@@ -4958,6 +4967,21 @@
       document.getElementById('ccwSummaryPermitNum').textContent = ccwData.permitNumber || 'Not Entered';
       document.getElementById('ccwSummaryExpDate').textContent = ccwData.expirationDate || 'Not Set';
 
+      // 90-Day Upload Deadline calculation & prominent display
+      let deadline90Str = ccwData.deadline90Days;
+      if (!deadline90Str && ccwData.expirationDate) {
+        try {
+          const expD = new Date(ccwData.expirationDate + 'T00:00:00');
+          expD.setDate(expD.getDate() - 90);
+          deadline90Str = expD.toISOString().split('T')[0];
+        } catch (e) {}
+      }
+      const deadlineDisplay = deadline90Str || 'Not Set (Enter Expiration Date)';
+      const summaryDeadEl = document.getElementById('ccwSummaryDeadline90');
+      if (summaryDeadEl) summaryDeadEl.textContent = deadlineDisplay;
+      const step3DeadEl = document.getElementById('ccwStep3DeadlineBadge');
+      if (step3DeadEl) step3DeadEl.textContent = deadlineDisplay;
+
       const days = ccwData.daysRemaining;
       if (days !== null && days !== undefined) {
         daysCountEl.textContent = days >= 0 ? days : Math.abs(days);
@@ -5011,7 +5035,7 @@
       document.getElementById('ccwTrainingNotes').value = ccwData.trainingNotes || '';
       document.getElementById('ccwTrainingCompany').value = ccwData.trainingCompany || '';
       document.getElementById('ccwTrainingAddress').value = ccwData.trainingAddress || '';
-      document.getElementById('ccwTrainingReminderFreq').value = ccwData.trainingReminderFreq || 'weekly';
+      document.getElementById('ccwTrainingLeadTime').value = ccwData.trainingLeadTime || '1_week';
       updateStepCardStyle('stepCardTraining', ccwData.trainingCompleted);
 
       // Populate Checklist 3: SDSO Upload
@@ -5037,7 +5061,7 @@
 
       // Render Important Links & Portals
       const defaultLinks = [
-        { title: "SDSO Permitium Portal", category: "Sheriff Portal", url: "https://sandiegoca.permitium.com/ccw/start" },
+        { title: "SDSO CCW Pro Portal", category: "Sheriff Portal", url: "https://sandiegoca.permitium.com/ccw/start" },
         { title: "San Diego Sheriff CCW Guidelines", category: "Official Site", url: "https://www.sdsheriff.gov/licensing/concealed-carry-weapon-license-ccw" },
         { title: "CA DOJ LiveScan Form (BCIA 8016)", category: "LiveScan", url: "https://oag.ca.gov/fingerprints/forms" }
       ];
@@ -5082,6 +5106,27 @@
       updateStepCardStyle('stepCardSdsoUpload', e.target.checked);
       if (e.target.checked && !document.getElementById('ccwSdsoUploadDate').value) {
         document.getElementById('ccwSdsoUploadDate').value = new Date().toISOString().split('T')[0];
+      }
+    };
+
+    // Live update 90-day upload deadline when expiration date is changed in the modal
+    document.getElementById('ccwExpirationDate').oninput = (e) => {
+      const val = e.target.value;
+      if (val) {
+        try {
+          const expD = new Date(val + 'T00:00:00');
+          expD.setDate(expD.getDate() - 90);
+          const deadStr = expD.toISOString().split('T')[0];
+          const summaryDeadEl = document.getElementById('ccwSummaryDeadline90');
+          if (summaryDeadEl) summaryDeadEl.textContent = deadStr;
+          const step3DeadEl = document.getElementById('ccwStep3DeadlineBadge');
+          if (step3DeadEl) step3DeadEl.textContent = deadStr;
+        } catch (err) {}
+      } else {
+        const summaryDeadEl = document.getElementById('ccwSummaryDeadline90');
+        if (summaryDeadEl) summaryDeadEl.textContent = 'Not Set';
+        const step3DeadEl = document.getElementById('ccwStep3DeadlineBadge');
+        if (step3DeadEl) step3DeadEl.textContent = 'Not Set';
       }
     };
 
@@ -5161,7 +5206,7 @@
         row.style.cssText = 'display:flex; gap:8px; align-items:center; background:var(--bg-card); padding:8px 10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); flex-wrap:wrap;';
         const hasUrl = item.url && item.url.trim().length > 0;
         row.innerHTML = `
-          <input type="text" class="form-control" placeholder="Link Title / Description (e.g. SDSO Permitium Portal)" value="${item.title || ''}" onchange="formCcwLinks[${idx}].title = this.value" style="flex:2; min-width:180px;">
+          <input type="text" class="form-control" placeholder="Link Title / Description (e.g. SDSO CCW Pro Portal)" value="${item.title || ''}" onchange="formCcwLinks[${idx}].title = this.value" style="flex:2; min-width:180px;">
           <input type="text" class="form-control" placeholder="Category (Sheriff, LiveScan, Training)" value="${item.category || ''}" onchange="formCcwLinks[${idx}].category = this.value" style="flex:1; min-width:120px;">
           <input type="url" class="form-control" placeholder="https://..." value="${item.url || ''}" onchange="formCcwLinks[${idx}].url = this.value" style="flex:2.5; min-width:200px;">
           <div style="display:flex; gap:4px; align-items:center;">
@@ -5212,7 +5257,7 @@
         trainingNotes: document.getElementById('ccwTrainingNotes').value.trim(),
         trainingCompany: document.getElementById('ccwTrainingCompany').value.trim(),
         trainingAddress: document.getElementById('ccwTrainingAddress').value.trim(),
-        trainingReminderFreq: document.getElementById('ccwTrainingReminderFreq').value,
+        trainingLeadTime: document.getElementById('ccwTrainingLeadTime').value,
 
         sdsoUploadCompleted: document.getElementById('ccwSdsoUploadCompleted').checked,
         sdsoUploadDate: document.getElementById('ccwSdsoUploadDate').value,

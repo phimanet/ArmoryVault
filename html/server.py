@@ -186,6 +186,7 @@ def get_seed_data():
             "trainingNotes": "",
             "trainingCompany": "",
             "trainingAddress": "",
+            "trainingLeadTime": "1_week",
             "trainingReminderFreq": "weekly",
             "sdsoUploadCompleted": False,
             "sdsoUploadDate": "",
@@ -194,7 +195,7 @@ def get_seed_data():
             "stopAlerts90Days": False,
             "checklistNotes": "",
             "importantLinks": [
-                {"title": "SDSO Permitium Portal", "url": "https://sandiegoca.permitium.com/ccw/start", "category": "Sheriff Portal"},
+                {"title": "SDSO CCW Pro Portal", "url": "https://sandiegoca.permitium.com/ccw/start", "category": "Sheriff Portal"},
                 {"title": "San Diego County Sheriff CCW Guidelines", "url": "https://www.sdsheriff.gov/licensing/concealed-carry-weapon-license-ccw", "category": "Official Site"},
                 {"title": "California DOJ LiveScan Form (BCIA 8016)", "url": "https://oag.ca.gov/fingerprints/forms", "category": "LiveScan"}
             ],
@@ -421,7 +422,7 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
                 <tr>
                   <td style="padding:12px; background-color:#1e293b; border-radius:0 0 6px 6px;">
                     <div style="font-size:14px; font-weight:700; color:#ffffff;">3. Upload Documents to San Diego Sheriff's Dept (90 Days Prior)</div>
-                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Submit certificates, training docs, and application directly through Permitium at least 90 days before expiration.</div>
+                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Submit certificates, training docs, and application directly through CCW Pro at least 90 days before expiration.</div>
                     <div style="margin-top:6px; font-size:12px; font-weight:600; color:{'#34d399' if ccw.get('sdsoUploadCompleted') else '#f59e0b'};">{upload_icon}</div>
                   </td>
                 </tr>
@@ -507,7 +508,36 @@ def check_and_send_ccw_reminders(force=False, test_recipient=None):
                     should_send = True
                     trigger_reason = f"Daily 90-Day Renewal Notice ({days_left} Days Remaining)"
 
-            # RULE 2: Configurable reminder frequencies for milestones (LiveScan, Class, Upload)
+            # RULE 2: Training Class Lead Time Reminder (Remind X days or weeks before scheduled class)
+            training_date_str = ccw.get("trainingDate")
+            if not should_send and not training_done and training_date_str:
+                try:
+                    tr_date = datetime.strptime(training_date_str, "%Y-%m-%d").date()
+                    days_until_class = (tr_date - today).days
+                    lead_time_choice = ccw.get("trainingLeadTime", "1_week")
+                    lead_days_map = {
+                        "1_day": 1,
+                        "2_days": 2,
+                        "3_days": 3,
+                        "5_days": 5,
+                        "1_week": 7,
+                        "2_weeks": 14,
+                        "3_weeks": 21,
+                        "1_month": 30
+                    }
+                    target_lead_days = lead_days_map.get(lead_time_choice, 7)
+                    if days_until_class == target_lead_days or days_until_class == 1 or days_until_class == 0:
+                        should_send = True
+                        if days_until_class == 0:
+                            trigger_reason = f"CCW Class Reminder: TODAY ({training_date_str})"
+                        elif days_until_class == 1:
+                            trigger_reason = f"CCW Class Reminder: TOMORROW ({training_date_str})"
+                        else:
+                            trigger_reason = f"CCW Class Reminder: {days_until_class} Days Before Class ({training_date_str})"
+                except Exception:
+                    pass
+
+            # RULE 3: Configurable recurring reminder frequencies for milestones (LiveScan, Class, Upload)
             if not should_send and days_left > 0:
                 # Milestone reminder frequencies: 'daily', 'every_2_days', 'every_3_days', 'weekly', 'biweekly', 'monthly'
                 freq_days_map = {
@@ -697,16 +727,20 @@ class RequestHandler(BaseHTTPRequestHandler):
         if path == "/api/ccw":
             db = load_db()
             ccw = db.get("ccw", {})
-            # Enrich with active daysLeft calculation
+            # Enrich with active daysLeft and 90-days-prior deadline calculation
             days_left = None
+            deadline_90_str = None
             exp_str = ccw.get("expirationDate")
             if exp_str:
                 try:
                     exp_date = datetime.strptime(exp_str, "%Y-%m-%d").date()
                     days_left = (exp_date - datetime.now().date()).days
+                    deadline_90_date = exp_date - timedelta(days=90)
+                    deadline_90_str = deadline_90_date.strftime("%Y-%m-%d")
                 except Exception:
                     pass
             ccw["daysRemaining"] = days_left
+            ccw["deadline90Days"] = deadline_90_str
             self.send_json(200, {"success": True, "ccw": ccw})
             return
 
@@ -993,19 +1027,28 @@ class RequestHandler(BaseHTTPRequestHandler):
             ccw["status"] = body.get("status", ccw.get("status", "Active"))
             ccw["emailAlertsEnabled"] = bool(body.get("emailAlertsEnabled", ccw.get("emailAlertsEnabled", True)))
             ccw["recipientEmail"] = body.get("recipientEmail", ccw.get("recipientEmail", "phimane@gmail.com")).strip()
+            ccw["stopAlerts90Days"] = bool(body.get("stopAlerts90Days", ccw.get("stopAlerts90Days", False)))
 
             # Key Critical Renewal Checklist items
             ccw["liveScanCompleted"] = bool(body.get("liveScanCompleted", ccw.get("liveScanCompleted", False)))
             ccw["liveScanDate"] = body.get("liveScanDate", ccw.get("liveScanDate", ""))
             ccw["liveScanNotes"] = body.get("liveScanNotes", ccw.get("liveScanNotes", "")).strip()
+            ccw["liveScanReminderFreq"] = body.get("liveScanReminderFreq", ccw.get("liveScanReminderFreq", "weekly"))
 
             ccw["trainingCompleted"] = bool(body.get("trainingCompleted", ccw.get("trainingCompleted", False)))
             ccw["trainingDate"] = body.get("trainingDate", ccw.get("trainingDate", ""))
             ccw["trainingHours"] = int(body.get("trainingHours") or ccw.get("trainingHours", 8))
             ccw["trainingNotes"] = body.get("trainingNotes", ccw.get("trainingNotes", "")).strip()
+            ccw["trainingCompany"] = body.get("trainingCompany", ccw.get("trainingCompany", "")).strip()
+            ccw["trainingAddress"] = body.get("trainingAddress", ccw.get("trainingAddress", "")).strip()
+            ccw["trainingLeadTime"] = body.get("trainingLeadTime", ccw.get("trainingLeadTime", "1_week"))
+            ccw["trainingReminderFreq"] = body.get("trainingReminderFreq", ccw.get("trainingReminderFreq", "weekly"))
 
             ccw["sdsoUploadCompleted"] = bool(body.get("sdsoUploadCompleted", ccw.get("sdsoUploadCompleted", False)))
             ccw["sdsoUploadDate"] = body.get("sdsoUploadDate", ccw.get("sdsoUploadDate", ""))
+            ccw["sdsoUploadNotes"] = body.get("sdsoUploadNotes", ccw.get("sdsoUploadNotes", "")).strip()
+            ccw["uploadReminderFreq"] = body.get("uploadReminderFreq", ccw.get("uploadReminderFreq", "daily"))
+
             ccw["checklistNotes"] = body.get("checklistNotes", ccw.get("checklistNotes", "")).strip()
             if "importantLinks" in body:
                 ccw["importantLinks"] = body["importantLinks"]
@@ -1017,15 +1060,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             db["ccw"] = ccw
             save_db(db)
 
-            # Re-calculate days remaining
+            # Re-calculate days remaining and 90-days-prior deadline
             days_left = None
+            deadline_90_str = None
             if ccw.get("expirationDate"):
                 try:
                     exp_date = datetime.strptime(ccw["expirationDate"], "%Y-%m-%d").date()
                     days_left = (exp_date - datetime.now().date()).days
+                    deadline_90_date = exp_date - timedelta(days=90)
+                    deadline_90_str = deadline_90_date.strftime("%Y-%m-%d")
                 except Exception:
                     pass
             ccw["daysRemaining"] = days_left
+            ccw["deadline90Days"] = deadline_90_str
             self.send_json(200, {"success": True, "ccw": ccw})
             return
 

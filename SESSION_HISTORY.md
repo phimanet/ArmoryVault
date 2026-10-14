@@ -91,11 +91,19 @@
 - **CCW Class Company & Address Location**:
   - Added dedicated fields `trainingCompany` and `trainingAddress` in CCW step 2 checklist.
   - Included company and address directly in the responsive HTML email template when CCW renewal notifications are dispatched.
-- **Customizable Milestone Reminder Frequencies**:
+- **Customizable Milestone Reminder Frequencies & Class Lead Time**:
   - Added reminder frequency selectors for:
     - **LiveScan Fingerprinting**: Daily, Every 2 Days, Every 3 Days, Weekly, Every 2 Weeks, Monthly.
-    - **CCW Renewal Class & Qualification**: Daily, Every 2 Days, Every 3 Days, Weekly, Every 2 Weeks, Monthly.
-    - **Upload Documents to SDSO (Permitium)**: Daily, Every 2 Days, Every 3 Days, Weekly, Every 2 Weeks, Monthly.
+    - **Upload Documents to SDSO (CCW Pro)**: Daily, Every 2 Days, Every 3 Days, Weekly, Every 2 Weeks, Monthly.
+  - Added explicit **"Remind Before Class" Lead Time Selector**:
+    - Options: 1 Day Before, 2 Days Before, 3 Days Before, 5 Days Before, 1 Week Before, 2 Weeks Before, 3 Weeks Before, 1 Month Before.
+    - Clarifies reminder type so user receives notification prior to class date.
+- **Prominent 90-Day Expiration Deadline Date Display**:
+  - Automatically calculates and prominently displays the exact 90-days-prior deadline date (`expirationDate - 90 days`).
+  - Rendered in CCW Renewal Schedule header banner and inside Step 3 (SDSO Upload card).
+  - Dynamically recalculates live on date input in UI.
+- **Branding Update - San Diego Sheriff CCW Pro**:
+  - Replaced all references from Permitium to **CCW Pro** across UI modal, form inputs, placeholders, seed data, and email templates.
 - **90-Day Daily Alert Policy & Stop Control**:
   - Automated daily email reminders beginning 90 days before CCW expiration until pending milestones are completed.
   - Added explicit check-box toggle: `Check mark here to STOP 90-day daily emails` (`stopAlerts90Days`), allowing manual override to halt alerts at any time.
