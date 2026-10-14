@@ -2491,6 +2491,28 @@
       return '••••••••' + serial.slice(-4);
     }
 
+    // US Date Formatter: converts "YYYY-MM-DD" or Date object to "MM-DD-YYYY"
+    function formatDateUS(dateVal) {
+      if (!dateVal) return '-';
+      if (typeof dateVal === 'string') {
+        const parts = dateVal.trim().split('T')[0].split('-');
+        if (parts.length === 3 && parts[0].length === 4) {
+          const [yyyy, mm, dd] = parts;
+          return `${mm}-${dd}-${yyyy}`;
+        }
+      }
+      try {
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime())) return String(dateVal);
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${mm}-${dd}-${yyyy}`;
+      } catch (e) {
+        return String(dateVal);
+      }
+    }
+
     function showToast(msg) {
       const toast = document.getElementById('toast');
       document.getElementById('toastMsg').textContent = msg;
@@ -2803,7 +2825,7 @@
         logs.forEach(l => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${l.date || '-'}</td>
+            <td>${formatDateUS(l.date)}</td>
             <td><strong>${l.type || '-'}</strong></td>
             <td>${l.roundsFired ? `${formatNumber(l.roundsFired)} Rds` : '-'}</td>
             <td style="color:var(--text-muted);">${l.notes || '-'}</td>
@@ -4182,7 +4204,7 @@
         const tr = document.createElement('tr');
         const isPdf = (doc.fileType === 'PDF' || (doc.fileName && doc.fileName.toLowerCase().endsWith('.pdf')));
         const typeIcon = isPdf ? '📄' : '🖼️';
-        const dateStr = doc.uploadedAt ? doc.uploadedAt.split('T')[0] : '-';
+        const dateStr = doc.uploadedAt ? formatDateUS(doc.uploadedAt.split('T')[0]) : '-';
         const sizeStr = doc.fileSize ? formatDocSize(doc.fileSize) : '';
 
         tr.innerHTML = `
@@ -4939,7 +4961,7 @@
           } else {
             numEl.textContent = `${days} Days`;
             numEl.style.color = '#34d399';
-            textEl.textContent = ccwData.expirationDate ? `Exp: ${ccwData.expirationDate}` : 'Active / Compliant';
+            textEl.textContent = ccwData.expirationDate ? `Exp: ${formatDateUS(ccwData.expirationDate)}` : 'Active / Compliant';
             metricItem.style.background = 'rgba(16, 185, 129, 0.08)';
             metricItem.style.borderColor = 'rgba(16, 185, 129, 0.35)';
           }
@@ -4965,7 +4987,7 @@
 
       document.getElementById('ccwAgencyText').textContent = ccwData.issuingAgency || 'San Diego County Sheriff\'s Department (SDSO)';
       document.getElementById('ccwSummaryPermitNum').textContent = ccwData.permitNumber || 'Not Entered';
-      document.getElementById('ccwSummaryExpDate').textContent = ccwData.expirationDate || 'Not Set';
+      document.getElementById('ccwSummaryExpDate').textContent = ccwData.expirationDate ? formatDateUS(ccwData.expirationDate) : 'Not Set';
 
       // 90-Day Upload Deadline calculation & prominent display
       let deadline90Str = ccwData.deadline90Days;
@@ -4976,7 +4998,7 @@
           deadline90Str = expD.toISOString().split('T')[0];
         } catch (e) {}
       }
-      const deadlineDisplay = deadline90Str || 'Not Set (Enter Expiration Date)';
+      const deadlineDisplay = deadline90Str ? formatDateUS(deadline90Str) : 'Not Set (Enter Expiration Date)';
       const summaryDeadEl = document.getElementById('ccwSummaryDeadline90');
       if (summaryDeadEl) summaryDeadEl.textContent = deadlineDisplay;
       const step3DeadEl = document.getElementById('ccwStep3DeadlineBadge');
@@ -5118,9 +5140,9 @@
           expD.setDate(expD.getDate() - 90);
           const deadStr = expD.toISOString().split('T')[0];
           const summaryDeadEl = document.getElementById('ccwSummaryDeadline90');
-          if (summaryDeadEl) summaryDeadEl.textContent = deadStr;
+          if (summaryDeadEl) summaryDeadEl.textContent = formatDateUS(deadStr);
           const step3DeadEl = document.getElementById('ccwStep3DeadlineBadge');
-          if (step3DeadEl) step3DeadEl.textContent = deadStr;
+          if (step3DeadEl) step3DeadEl.textContent = formatDateUS(deadStr);
         } catch (err) {}
       } else {
         const summaryDeadEl = document.getElementById('ccwSummaryDeadline90');

@@ -323,7 +323,17 @@ def send_smtp_email(to_emails, subject, html_content):
 
 def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
     """Generates an executive, mobile-friendly HTML alert detailing renewal milestones."""
-    exp_date_str = ccw.get("expirationDate") or "Not set"
+    raw_exp = ccw.get("expirationDate") or ""
+    exp_date_str = "Not set"
+    if raw_exp:
+        try:
+            parts = raw_exp.split("-")
+            if len(parts) == 3 and len(parts[0]) == 4:
+                exp_date_str = f"{parts[1]}-{parts[2]}-{parts[0]}"
+            else:
+                exp_date_str = raw_exp
+        except Exception:
+            exp_date_str = raw_exp
     permit_num = ccw.get("permitNumber") or "On File"
     holder = ccw.get("holderName") or "Phimane"
     agency = ccw.get("issuingAgency") or "San Diego County Sheriff's Department"
@@ -574,7 +584,14 @@ def check_and_send_ccw_reminders(force=False, test_recipient=None):
                     trigger_reason = f"Milestone Reminder: {', '.join(pending_reasons)} ({days_left} Days Left)"
 
     if should_send:
-        subject = f"⚠️ CCW Renewal Alert: {days_left} Days Remaining Until Expiration ({exp_str})"
+        us_exp_str = exp_str
+        try:
+            p = exp_str.split("-")
+            if len(p) == 3 and len(p[0]) == 4:
+                us_exp_str = f"{p[1]}-{p[2]}-{p[0]}"
+        except Exception:
+            pass
+        subject = f"⚠️ CCW Renewal Alert: {days_left} Days Remaining Until Expiration ({us_exp_str})"
         html = build_ccw_reminder_email(ccw, days_left)
         result = send_smtp_email([recipient], subject, html)
 

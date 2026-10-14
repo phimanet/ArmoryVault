@@ -107,6 +107,8 @@
 - **Order of Operations Correction for CCW Renewal**:
   - Reordered milestones so **Step 1 is CCW Renewal Class & Live-Fire Qualification**, followed by **Step 2 LiveScan Fingerprinting**, and **Step 3 Upload Documents to CCW Pro (90 Days Prior)**.
   - Updated sequence across CCW compliance modal, helper notes, and executive HTML email templates.
+- **US Standard Date Formatting (`MM-DD-YYYY`)**:
+  - Implemented `formatDateUS()` utility formatting dates as `MM-DD-YYYY` (e.g. `03-27-2026`) across the main page CCW banner, CCW modal expiration date, 90-day upload deadline badges, firearm maintenance logs, document upload dates, and Gmail alert subject/content.
 - **Git Deployment Pipeline**:
   - Committed and pushed to `phimanet/ArmoryVault` (`origin main`).
   - Pulled and verified live on production container host `http://192.168.72.10:8186`.
