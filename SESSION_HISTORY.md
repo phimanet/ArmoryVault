@@ -104,9 +104,9 @@
   - Dynamically recalculates live on date input in UI.
 - **Branding Update - San Diego Sheriff CCW Pro**:
   - Replaced all references from Permitium to **CCW Pro** across UI modal, form inputs, placeholders, seed data, and email templates.
-- **90-Day Daily Alert Policy & Stop Control**:
-  - Automated daily email reminders beginning 90 days before CCW expiration until pending milestones are completed.
-  - Added explicit check-box toggle: `Check mark here to STOP 90-day daily emails` (`stopAlerts90Days`), allowing manual override to halt alerts at any time.
+- **Order of Operations Correction for CCW Renewal**:
+  - Reordered milestones so **Step 1 is CCW Renewal Class & Live-Fire Qualification**, followed by **Step 2 LiveScan Fingerprinting**, and **Step 3 Upload Documents to CCW Pro (90 Days Prior)**.
+  - Updated sequence across CCW compliance modal, helper notes, and executive HTML email templates.
 - **Git Deployment Pipeline**:
   - Committed and pushed to `phimanet/ArmoryVault` (`origin main`).
   - Pulled and verified live on production container host `http://192.168.72.10:8186`.

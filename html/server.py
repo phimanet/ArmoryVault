@@ -404,18 +404,18 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
                 <!-- Step 1 -->
                 <tr>
                   <td style="padding:12px; background-color:#1e293b; border-bottom:1px solid #334155; border-radius:6px 6px 0 0;">
-                    <div style="font-size:14px; font-weight:700; color:#ffffff;">1. LiveScan Fingerprinting</div>
-                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Complete official LiveScan required prior to the CCW renewal course.</div>
-                    <div style="margin-top:6px; font-size:12px; font-weight:600; color:{'#34d399' if ccw.get('liveScanCompleted') else '#f59e0b'};">{livescan_icon}</div>
+                    <div style="font-size:14px; font-weight:700; color:#ffffff;">1. CCW Renewal Class & Qualification</div>
+                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Complete approved 8-hour CCW retraining course and live-fire shooting qualification.</div>
+                    {class_location_html}
+                    <div style="margin-top:6px; font-size:12px; font-weight:600; color:{'#34d399' if ccw.get('trainingCompleted') else '#f59e0b'};">{training_icon}</div>
                   </td>
                 </tr>
                 <!-- Step 2 -->
                 <tr>
                   <td style="padding:12px; background-color:#1e293b; border-bottom:1px solid #334155;">
-                    <div style="font-size:14px; font-weight:700; color:#ffffff;">2. CCW Renewal Class & Qualification</div>
-                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Complete approved 8-hour CCW retraining course and live-fire shooting qualification.</div>
-                    {class_location_html}
-                    <div style="margin-top:6px; font-size:12px; font-weight:600; color:{'#34d399' if ccw.get('trainingCompleted') else '#f59e0b'};">{training_icon}</div>
+                    <div style="font-size:14px; font-weight:700; color:#ffffff;">2. LiveScan Fingerprinting</div>
+                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Official DOJ fingerprint background check completed following CCW renewal class.</div>
+                    <div style="margin-top:6px; font-size:12px; font-weight:600; color:{'#34d399' if ccw.get('liveScanCompleted') else '#f59e0b'};">{livescan_icon}</div>
                   </td>
                 </tr>
                 <!-- Step 3 -->

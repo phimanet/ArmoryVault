@@ -2025,52 +2025,15 @@
             Critical Renewal Milestones (San Diego Sheriff Workflow)
           </h3>
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
-            Sequential compliance: <strong>(1) LiveScan fingerprinting</strong> must be submitted before class, <strong>(2) CCW training & qualification</strong> must be completed, then <strong>(3) all documents must be uploaded to CCW Pro 90 days before expiration</strong>.
+            Sequential compliance: <strong>(1) CCW renewal training & qualification class</strong> is completed, followed by <strong>(2) LiveScan fingerprinting</strong>, then <strong>(3) all documents & certificates must be uploaded to CCW Pro 90 days before expiration</strong>.
           </p>
 
           <div style="display:flex; flex-direction:column; gap:12px;">
-            <!-- Step 1: LiveScan -->
-            <div class="ccw-step-card" id="stepCardLiveScan">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                  <div class="ccw-step-num">1</div>
-                  <div>
-                    <div style="font-weight:700; font-size:0.95rem;">LiveScan Fingerprinting</div>
-                    <div style="font-size:0.78rem; color:var(--text-muted);">Required fingerprint background check prior to renewal qualification class</div>
-                  </div>
-                </div>
-                <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:700; cursor:pointer; color:#34d399;">
-                  <input type="checkbox" id="ccwLiveScanCompleted" style="width:16px; height:16px; accent-color:#10b981;"> Completed
-                </label>
-              </div>
-              <div style="display:grid; grid-template-columns:180px 1fr 180px; gap:10px;">
-                <div>
-                  <label class="form-label">Date Completed</label>
-                  <input type="date" class="form-control" id="ccwLiveScanDate">
-                </div>
-                <div>
-                  <label class="form-label">LiveScan ATI / Location Notes</label>
-                  <input type="text" class="form-control" id="ccwLiveScanNotes" placeholder="ATI tracking number, livescan operator location...">
-                </div>
-                <div>
-                  <label class="form-label" style="color:#38bdf8;">Reminder Frequency</label>
-                  <select class="form-control" id="ccwLiveScanReminderFreq" style="border-color:rgba(56,189,248,0.4);">
-                    <option value="daily">Daily</option>
-                    <option value="every_2_days">Every 2 Days</option>
-                    <option value="every_3_days">Every 3 Days</option>
-                    <option value="weekly" selected>Weekly</option>
-                    <option value="biweekly">Every 2 Weeks</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 2: CCW Training Class & Qualification -->
+            <!-- Step 1: CCW Training Class & Qualification -->
             <div class="ccw-step-card" id="stepCardTraining">
               <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:12px;">
-                  <div class="ccw-step-num">2</div>
+                  <div class="ccw-step-num">1</div>
                   <div>
                     <div style="font-weight:700; font-size:0.95rem;">CCW Renewal Class & Live-Fire Qualification</div>
                     <div style="font-size:0.78rem; color:var(--text-muted);">State-certified 8-hour renewal course & shooting qualification for all listed handguns</div>
@@ -2116,6 +2079,43 @@
                 <div>
                   <label class="form-label" style="color:#93c5fd;">Class Location Address</label>
                   <input type="text" class="form-control" id="ccwTrainingAddress" placeholder="e.g. 123 Training Blvd, Suite 100, San Diego, CA 92101">
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: LiveScan -->
+            <div class="ccw-step-card" id="stepCardLiveScan">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div class="ccw-step-num">2</div>
+                  <div>
+                    <div style="font-weight:700; font-size:0.95rem;">LiveScan Fingerprinting</div>
+                    <div style="font-size:0.78rem; color:var(--text-muted);">Official DOJ fingerprint background check completed after CCW renewal class</div>
+                  </div>
+                </div>
+                <label style="display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:700; cursor:pointer; color:#34d399;">
+                  <input type="checkbox" id="ccwLiveScanCompleted" style="width:16px; height:16px; accent-color:#10b981;"> Completed
+                </label>
+              </div>
+              <div style="display:grid; grid-template-columns:180px 1fr 180px; gap:10px;">
+                <div>
+                  <label class="form-label">Date Completed</label>
+                  <input type="date" class="form-control" id="ccwLiveScanDate">
+                </div>
+                <div>
+                  <label class="form-label">LiveScan ATI / Location Notes</label>
+                  <input type="text" class="form-control" id="ccwLiveScanNotes" placeholder="ATI tracking number, livescan operator location...">
+                </div>
+                <div>
+                  <label class="form-label" style="color:#38bdf8;">Reminder Frequency</label>
+                  <select class="form-control" id="ccwLiveScanReminderFreq" style="border-color:rgba(56,189,248,0.4);">
+                    <option value="daily">Daily</option>
+                    <option value="every_2_days">Every 2 Days</option>
+                    <option value="every_3_days">Every 3 Days</option>
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="biweekly">Every 2 Weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
                 </div>
               </div>
             </div>
