@@ -37,8 +37,8 @@ if os.path.exists("/app/data"):
     UPLOADS_DIR = "/app/uploads/photos"
     DOCS_DIR = "/app/uploads/documents"
 else:
-    # Local fallback
-    ROOT_DIR = os.path.dirname(BASE_DIR)
+    # Local fallback (supports running from project root or html/)
+    ROOT_DIR = BASE_DIR if os.path.basename(BASE_DIR) != "html" else os.path.dirname(BASE_DIR)
     DATA_DIR = os.path.join(ROOT_DIR, "data")
     UPLOADS_DIR = os.path.join(ROOT_DIR, "uploads", "photos")
     DOCS_DIR = os.path.join(ROOT_DIR, "uploads", "documents")
@@ -48,6 +48,16 @@ DB_FILE = os.path.join(DATA_DIR, "firearms.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+
+def safe_resolve_path(base_dir, filename):
+    """Canonicalizes file path and strictly enforces directory containment."""
+    base_real = os.path.realpath(base_dir)
+    safe_name = os.path.basename(str(filename))
+    candidate = os.path.realpath(os.path.join(base_real, safe_name))
+    if os.path.commonpath([base_real, candidate]) != base_real:
+        raise ValueError("Path traversal blocked by canonical containment policy")
+    return candidate
 os.makedirs(DOCS_DIR, exist_ok=True)
 os.makedirs(BACKUPS_DIR, exist_ok=True)
 
@@ -652,13 +662,19 @@ class RequestHandler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin")
         if origin and self.is_origin_allowed(origin):
             self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
             self.send_header("Access-Control-Max-Age", "86400")
-        elif not origin:
-            self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
 
     def do_OPTIONS(self):
+        origin = self.headers.get("Origin")
+        if origin and not self.is_origin_allowed(origin):
+            self.send_response(403)
+            self.end_headers()
+            return
         self.send_response(204)
         self.send_cors_headers()
         self.end_headers()
@@ -936,7 +952,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 base64_data = "".join(base64_data.split())
                 img_bytes = base64.b64decode(base64_data)
                 filename = f"fa_{int(time.time())}_{uuid.uuid4().hex[:6]}.{ext}"
-                filepath = os.path.join(UPLOADS_DIR, filename)
+                filepath = safe_resolve_path(UPLOADS_DIR, filename)
 
                 with open(filepath, "wb") as f:
                     f.write(img_bytes)
@@ -983,7 +999,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 doc_bytes = base64.b64decode(base64_data)
                 doc_id = f"doc_{uuid.uuid4().hex[:8]}"
                 filename = f"doc_{int(time.time())}_{uuid.uuid4().hex[:6]}.{ext}"
-                filepath = os.path.join(DOCS_DIR, filename)
+                filepath = safe_resolve_path(DOCS_DIR, filename)
 
                 with open(filepath, "wb") as f:
                     f.write(doc_bytes)

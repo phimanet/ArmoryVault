@@ -18,10 +18,10 @@ services:
     restart: unless-stopped
     working_dir: /app
     volumes:
-      - ./html:/app/html:ro
+      - .:/app:ro
       - ./data:/app/data
       - ./uploads:/app/uploads
       - ./.env:/app/.env:ro
     environment:
       - PORT=5000
-    command: python3 /app/html/server.py
+    command: python3 /app/server.py
