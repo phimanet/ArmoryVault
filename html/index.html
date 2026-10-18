@@ -6454,26 +6454,12 @@
     // ----------------------------------------------------------------------
     // Out-of-State CCW Permits (Utah, Arizona, & Custom States)
     // ----------------------------------------------------------------------
-    function renderOtherStatePermits() {
+    function renderOtherStateTabs() {
       const tabsBar = document.getElementById('otherStateTabsBar');
-      const panel = document.getElementById('otherStateActivePanel');
-      if (!tabsBar || !panel) return;
-
+      if (!tabsBar) return;
       tabsBar.innerHTML = '';
-      panel.innerHTML = '';
+      if (!currentOtherStatePermits || currentOtherStatePermits.length === 0) return;
 
-      if (!currentOtherStatePermits || currentOtherStatePermits.length === 0) {
-        panel.innerHTML = `
-          <div style="text-align:center; padding:18px; background:rgba(0,0,0,0.2); border:1px dashed var(--border-color); border-radius:var(--radius-sm); color:var(--text-muted); font-size:0.82rem;">
-            No Out-of-State CCW permits added yet. Click <strong>+ Utah</strong>, <strong>+ Arizona</strong>, or <strong>+ Other State</strong> above to add one.
-          </div>
-        `;
-        return;
-      }
-
-      if (activeOtherStateIdx >= currentOtherStatePermits.length) activeOtherStateIdx = 0;
-
-      // Render Clickable State Tabs
       currentOtherStatePermits.forEach((sp, idx) => {
         const isActive = idx === activeOtherStateIdx;
         const days = calcDaysUntil(sp.expirationDate);
@@ -6512,6 +6498,62 @@
         `;
         tabsBar.appendChild(btn);
       });
+    }
+
+    function updateOtherStateHeaderInPlace(idx) {
+      const sp = currentOtherStatePermits[idx];
+      if (!sp) return;
+      renderOtherStateTabs();
+
+      const titleEl = document.getElementById('otherStateTitleText');
+      if (titleEl) {
+        titleEl.textContent = `${sp.state || 'Out-of-State'} CCW Permit — ${sp.permitName || 'Concealed Carry Permit'}`;
+      }
+
+      const days = calcDaysUntil(sp.expirationDate);
+      const dead90 = calc90DayDeadlineStr(sp.expirationDate);
+      const dead90Display = dead90 ? formatDateUS(dead90) : 'Set Expiration Date';
+      const daysDisplay = days !== null ? (days < 0 ? `${Math.abs(days)} Days Overdue` : `${days} Days Remaining`) : 'Set Expiration Date';
+      const daysColor = days !== null ? (days < 0 ? '#fb7185' : (days <= 90 ? '#fbbf24' : '#34d399')) : 'var(--text-muted)';
+
+      const countEl = document.getElementById('otherStateCountdownText');
+      if (countEl) {
+        countEl.textContent = daysDisplay;
+        countEl.style.color = daysColor;
+      }
+      const deadEl = document.getElementById('otherStateDeadlineText');
+      if (deadEl) {
+        deadEl.textContent = dead90Display;
+      }
+      const portalWrap = document.getElementById('otherStatePortalLinkWrap');
+      if (portalWrap) {
+        const safePortal = sanitizeUrl(sp.portalUrl);
+        portalWrap.innerHTML = (safePortal && safePortal !== '#')
+          ? `<a href="${escapeHtml(safePortal)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:4px 10px; font-size:0.74rem; color:#38bdf8;">🌐 State Portal ↗</a>`
+          : '';
+      }
+    }
+
+    function renderOtherStatePermits() {
+      const tabsBar = document.getElementById('otherStateTabsBar');
+      const panel = document.getElementById('otherStateActivePanel');
+      if (!tabsBar || !panel) return;
+
+      tabsBar.innerHTML = '';
+      panel.innerHTML = '';
+
+      if (!currentOtherStatePermits || currentOtherStatePermits.length === 0) {
+        panel.innerHTML = `
+          <div style="text-align:center; padding:18px; background:rgba(0,0,0,0.2); border:1px dashed var(--border-color); border-radius:var(--radius-sm); color:var(--text-muted); font-size:0.82rem;">
+            No Out-of-State CCW permits added yet. Click <strong>+ Utah</strong>, <strong>+ Arizona</strong>, or <strong>+ Other State</strong> above to add one.
+          </div>
+        `;
+        return;
+      }
+
+      if (activeOtherStateIdx >= currentOtherStatePermits.length) activeOtherStateIdx = 0;
+
+      renderOtherStateTabs();
 
       // Render Selected State Permit Card
       const sp = currentOtherStatePermits[activeOtherStateIdx];
@@ -6527,14 +6569,14 @@
         <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(167,139,250,0.3); border-radius:var(--radius-sm); padding:14px;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.07); padding-bottom:10px;">
             <div>
-              <div style="font-size:1rem; font-weight:800; color:#f8fafc;">${escapeHtml(sp.state || 'Out-of-State')} CCW Permit — ${escapeHtml(sp.permitName || 'Concealed Carry Permit')}</div>
+              <div id="otherStateTitleText" style="font-size:1rem; font-weight:800; color:#f8fafc;">${escapeHtml(sp.state || 'Out-of-State')} CCW Permit — ${escapeHtml(sp.permitName || 'Concealed Carry Permit')}</div>
               <div style="font-size:0.76rem; color:var(--text-muted); margin-top:2px;">
-                ⏳ Countdown: <strong style="color:${daysColor};">${daysDisplay}</strong> &bull;
-                📅 90-Day Renewal Notice Date: <strong style="color:#c4b5fd;">${dead90Display}</strong>
+                ⏳ Countdown: <strong id="otherStateCountdownText" style="color:${daysColor};">${daysDisplay}</strong> &bull;
+                📅 90-Day Renewal Notice Date: <strong id="otherStateDeadlineText" style="color:#c4b5fd;">${dead90Display}</strong>
               </div>
             </div>
             <div style="display:flex; gap:6px; align-items:center;">
-              ${safePortal && safePortal !== '#' ? `<a href="${escapeHtml(safePortal)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:4px 10px; font-size:0.74rem; color:#38bdf8;">🌐 State Portal ↗</a>` : ''}
+              <span id="otherStatePortalLinkWrap">${safePortal && safePortal !== '#' ? `<a href="${escapeHtml(safePortal)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:4px 10px; font-size:0.74rem; color:#38bdf8;">🌐 State Portal ↗</a>` : ''}</span>
               <button type="button" class="btn btn-secondary" onclick="archiveStatePermitToHistory(${idx})" style="padding:4px 10px; font-size:0.74rem; border-color:rgba(59,130,246,0.4); color:#93c5fd;" title="Archive this state permit to Prior Permits History">
                 📦 Archive to Prior
               </button>
@@ -6547,19 +6589,19 @@
           <div class="form-grid" style="margin-bottom:12px;">
             <div class="form-group">
               <label class="form-label">State</label>
-              <input type="text" class="form-control" value="${escapeHtml(sp.state || '')}" onchange="updateStatePermitField(${idx}, 'state', this.value)" placeholder="e.g. Utah, Arizona, Florida">
+              <input type="text" class="form-control" value="${escapeHtml(sp.state || '')}" oninput="updateStatePermitField(${idx}, 'state', this.value, false)" onblur="updateStatePermitField(${idx}, 'state', this.value, true)" placeholder="e.g. Utah, Arizona, Florida">
             </div>
             <div class="form-group">
               <label class="form-label">Permit Number</label>
-              <input type="text" class="form-control" value="${escapeHtml(sp.permitNumber || '')}" onchange="updateStatePermitField(${idx}, 'permitNumber', this.value)" placeholder="Permit / License #">
+              <input type="text" class="form-control" value="${escapeHtml(sp.permitNumber || '')}" oninput="updateStatePermitField(${idx}, 'permitNumber', this.value, false)" onblur="updateStatePermitField(${idx}, 'permitNumber', this.value, true)" placeholder="Permit / License #">
             </div>
             <div class="form-group">
               <label class="form-label">Issuing Agency</label>
-              <input type="text" class="form-control" value="${escapeHtml(sp.issuingAgency || '')}" onchange="updateStatePermitField(${idx}, 'issuingAgency', this.value)" placeholder="e.g. Utah BCI, AZ DPS">
+              <input type="text" class="form-control" value="${escapeHtml(sp.issuingAgency || '')}" oninput="updateStatePermitField(${idx}, 'issuingAgency', this.value, false)" onblur="updateStatePermitField(${idx}, 'issuingAgency', this.value, true)" placeholder="e.g. Utah BCI, AZ DPS">
             </div>
             <div class="form-group">
               <label class="form-label">Status</label>
-              <select class="form-control" onchange="updateStatePermitField(${idx}, 'status', this.value)">
+              <select class="form-control" onchange="updateStatePermitField(${idx}, 'status', this.value, true)">
                 <option value="Active" ${sp.status === 'Active' ? 'selected' : ''}>Active</option>
                 <option value="Renewal Pending" ${sp.status === 'Renewal Pending' ? 'selected' : ''}>Renewal Pending</option>
                 <option value="Expired" ${sp.status === 'Expired' ? 'selected' : ''}>Expired</option>
@@ -6567,30 +6609,30 @@
             </div>
             <div class="form-group">
               <label class="form-label">Issue Date</label>
-              <input type="date" class="form-control" value="${escapeHtml(sp.issueDate || '')}" onchange="updateStatePermitField(${idx}, 'issueDate', this.value)">
+              <input type="date" class="form-control" min="1970-01-01" max="2099-12-31" value="${escapeHtml(sp.issueDate || '')}" oninput="updateStatePermitField(${idx}, 'issueDate', this.value, false)" onblur="updateStatePermitField(${idx}, 'issueDate', this.value, true)" onchange="updateStatePermitField(${idx}, 'issueDate', this.value, true)">
             </div>
             <div class="form-group">
               <label class="form-label" style="color:#c4b5fd; font-weight:700;">Expiration Date (Triggers 90-Day Alert)</label>
-              <input type="date" class="form-control" value="${escapeHtml(sp.expirationDate || '')}" onchange="updateStatePermitField(${idx}, 'expirationDate', this.value)" style="border-color:rgba(167,139,250,0.5);">
+              <input type="date" class="form-control" min="1970-01-01" max="2099-12-31" value="${escapeHtml(sp.expirationDate || '')}" oninput="updateStatePermitField(${idx}, 'expirationDate', this.value, false)" onblur="updateStatePermitField(${idx}, 'expirationDate', this.value, true)" onchange="updateStatePermitField(${idx}, 'expirationDate', this.value, true)" style="border-color:rgba(167,139,250,0.5);">
             </div>
             <div class="form-group">
               <label class="form-label">State Renewal Portal URL</label>
-              <input type="url" class="form-control" value="${escapeHtml(sp.portalUrl || '')}" onchange="updateStatePermitField(${idx}, 'portalUrl', this.value)" placeholder="https://...">
+              <input type="url" class="form-control" value="${escapeHtml(sp.portalUrl || '')}" oninput="updateStatePermitField(${idx}, 'portalUrl', this.value, false)" onblur="updateStatePermitField(${idx}, 'portalUrl', this.value, true)" placeholder="https://...">
             </div>
             <div class="form-group">
               <label class="form-label">Notes</label>
-              <input type="text" class="form-control" value="${escapeHtml(sp.notes || '')}" onchange="updateStatePermitField(${idx}, 'notes', this.value)" placeholder="Reciprocity notes, renewal fee, instructor...">
+              <input type="text" class="form-control" value="${escapeHtml(sp.notes || '')}" oninput="updateStatePermitField(${idx}, 'notes', this.value, false)" onblur="updateStatePermitField(${idx}, 'notes', this.value, true)" placeholder="Reciprocity notes, renewal fee, instructor...">
             </div>
           </div>
 
           <!-- 90-Day Notification Bar for this State Permit -->
           <div style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.28); border-radius:6px; padding:8px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.8rem; font-weight:700; color:#c4b5fd;">
-              <input type="checkbox" ${sp.notify90Days !== false ? 'checked' : ''} onchange="updateStatePermitField(${idx}, 'notify90Days', this.checked)" style="width:16px; height:16px; accent-color:#8b5cf6;">
+              <input type="checkbox" ${sp.notify90Days !== false ? 'checked' : ''} onchange="updateStatePermitField(${idx}, 'notify90Days', this.checked, true)" style="width:16px; height:16px; accent-color:#8b5cf6;">
               <span>🔔 Notify me by email 90 days before ${escapeHtml(sp.state || 'this')} permit expires</span>
             </label>
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.78rem; font-weight:700; color:#34d399;">
-              <input type="checkbox" ${sp.renewalCompleted ? 'checked' : ''} onchange="updateStatePermitField(${idx}, 'renewalCompleted', this.checked)" style="width:15px; height:15px; accent-color:#10b981;">
+              <input type="checkbox" ${sp.renewalCompleted ? 'checked' : ''} onchange="updateStatePermitField(${idx}, 'renewalCompleted', this.checked, true)" style="width:15px; height:15px; accent-color:#10b981;">
               <span>✅ Renewal Completed (Stop 90-Day Alerts)</span>
             </label>
           </div>
@@ -6647,11 +6689,27 @@
       `;
     }
 
-    function updateStatePermitField(idx, field, value) {
+    function updateStatePermitField(idx, field, value, shouldSave = true) {
       if (!currentOtherStatePermits[idx]) return;
       currentOtherStatePermits[idx][field] = value;
-      renderOtherStatePermits();
-      saveCcwPhotosDirect();
+
+      // For date fields, wait until a full 4-digit year (>= 1970) is entered before updating countdown or auto-saving
+      if (field === 'issueDate' || field === 'expirationDate') {
+        const yearNum = value ? parseInt(value.slice(0, 4), 10) : 0;
+        const isCompleteYear = !value || (yearNum >= 1970 && yearNum <= 2100);
+        if (isCompleteYear) {
+          updateOtherStateHeaderInPlace(idx);
+          if (shouldSave) {
+            saveCcwPhotosDirect();
+          }
+        }
+        return;
+      }
+
+      updateOtherStateHeaderInPlace(idx);
+      if (shouldSave) {
+        saveCcwPhotosDirect();
+      }
     }
 
     function quickAddStatePermit(preset) {
