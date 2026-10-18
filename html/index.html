@@ -462,14 +462,98 @@
     }
     .card-accessories svg { width: 14px; height: 14px; fill: #f59e0b; flex-shrink: 0; }
 
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
-      grid-column: 1 / -1;
+    /* Inactive / Sold firearm card styling */
+    .firearm-card.card-inactive {
+      border-color: rgba(148, 163, 184, 0.28);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.45) 0%, rgba(15, 23, 42, 0.7) 100%);
+      opacity: 0.92;
     }
-    .empty-state svg { width: 48px; height: 48px; fill: var(--text-dim); margin-bottom: 12px; }
+    .firearm-card.card-inactive .card-photo {
+      filter: grayscale(25%);
+    }
+    .card-badge-inactive {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.38);
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* CCW Permit Card & Multi-Year Nostalgia Styling */
+    .permit-card-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+    .permit-card-box-header {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .permit-card-preview-wrap {
+      height: 185px;
+      background: #060911;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .permit-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.2s ease;
+    }
+    .permit-card-preview-wrap:hover .permit-card-img {
+      transform: scale(1.02);
+    }
+    .permit-card-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      text-align: center;
+    }
+    .permit-card-box-actions {
+      padding: 8px 12px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.7);
+      flex-wrap: wrap;
+    }
+    .historical-permit-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+    .historical-permit-card:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
 
     /* Modals & Popouts */
     .modal-overlay {
@@ -1463,6 +1547,7 @@
       <button class="chip" data-type="Shotgun">Shotguns</button>
       <button class="chip" data-type="NFA / Suppressor">NFA / Suppressors</button>
       <button class="chip" data-type="Receiver / Lower">Receivers</button>
+      <button class="chip" data-type="Inactive" id="chipInactive" style="color:#94a3b8; border-color:rgba(148,163,184,0.35);" title="View sold, transferred, or inactive firearms">📦 Sold / Inactive <span id="inactiveBadgeCount" style="display:none; background:rgba(239,68,68,0.25); color:#f87171; font-size:0.7rem; font-weight:800; padding:1px 6px; border-radius:10px; margin-left:4px;">0</span></button>
     </div>
 
     <!-- Sort Selector -->
@@ -1528,6 +1613,11 @@
           <button class="btn btn-secondary" id="editDetailBtn">
             <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
             <span>Edit</span>
+          </button>
+          <!-- Quick Status Action: Mark Sold / Inactive or Reactivate -->
+          <button class="btn btn-secondary" id="toggleSoldDetailBtn" onclick="handleDetailStatusAction()" title="Mark as sold or restore to active" style="color:#f59e0b; border-color:rgba(245,158,11,0.4);">
+            <span id="toggleSoldDetailIcon">🏷️</span>
+            <span id="toggleSoldDetailLabel" class="detail-btn-label">Mark Sold</span>
           </button>
 
           <!-- Safe Exit Button: Explicit button, clearly separated from Delete -->
@@ -1622,6 +1712,31 @@
             <div class="detail-field">
               <span class="detail-field-label">CCW Permit Status</span>
               <span class="detail-field-val" id="detailCCWStatus" style="color:#fbbf24;">-</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-field-label">Vault Status</span>
+              <span class="detail-field-val" id="detailStatus">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sold / Inactive Transfer Details Card in Detail Modal -->
+        <div id="detailSoldBanner" style="display:none; margin-top:14px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:var(--radius-sm); padding:12px 16px;">
+          <div style="font-size:0.8rem; font-weight:800; color:#f87171; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <span>🏷️</span> Sold / Transfer Record Details
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; font-size:0.82rem;">
+            <div>
+              <span style="color:var(--text-muted); display:block; font-size:0.72rem; text-transform:uppercase;">Date Sold / Transferred</span>
+              <strong id="detailSoldDate" style="color:var(--text-main);">-</strong>
+            </div>
+            <div>
+              <span style="color:var(--text-muted); display:block; font-size:0.72rem; text-transform:uppercase;">Sale Price</span>
+              <strong id="detailSoldPrice" style="color:#34d399;">$0.00</strong>
+            </div>
+            <div style="grid-column:1 / -1;">
+              <span style="color:var(--text-muted); display:block; font-size:0.72rem; text-transform:uppercase;">Buyer / FFL / Transfer Notes</span>
+              <span id="detailSoldTo" style="color:var(--text-main);">-</span>
             </div>
           </div>
         </div>
@@ -1819,6 +1934,34 @@
                 <input type="checkbox" id="formOnCCW" style="width:18px; height:18px; accent-color:#f59e0b; cursor:pointer;">
                 <span style="font-size:0.83rem; font-weight:700; color:#fbbf24;">🛡️ Listed on CCW Permit</span>
               </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Vault Status</label>
+              <select class="form-control" id="formStatus" onchange="toggleSoldFormFields()">
+                <option value="Active">Active (In Vault)</option>
+                <option value="Sold">Sold (Inactive)</option>
+                <option value="Inactive">Inactive / Transferred</option>
+              </select>
+            </div>
+            <!-- Collapsible Sold / Inactive Transfer Section in Form -->
+            <div id="formSoldDetails" style="display:none; grid-column:1 / -1; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:var(--radius-sm); padding:12px; margin-top:2px;">
+              <div style="font-size:0.78rem; font-weight:800; color:#f87171; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <span>🏷️</span> Sold / Inactive Transfer Information
+              </div>
+              <div class="form-grid" style="margin-top:0;">
+                <div class="form-group">
+                  <label class="form-label">Date Sold / Transferred</label>
+                  <input type="date" class="form-control" id="formSoldDate">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sale Price ($)</label>
+                  <input type="number" step="0.01" class="form-control" id="formSoldPrice" placeholder="0.00">
+                </div>
+                <div class="form-group full">
+                  <label class="form-label">Buyer / Dealer FFL / Transfer Notes</label>
+                  <input type="text" class="form-control" id="formSoldTo" placeholder="e.g. PPT to John Doe at Gunfighter Tactical, DROS #...">
+                </div>
+              </div>
             </div>
             <div class="form-group full">
               <label class="form-label">Notes & Specifications</label>
@@ -2021,6 +2164,118 @@
           <div style="text-align:right;">
             <div class="ccw-days-count" id="ccwDaysRemainingVal" style="color:#fbbf24;">--</div>
             <div class="ccw-days-label" id="ccwDaysRemainingLabel">Days Until Expiration</div>
+          </div>
+        <!-- CCW Permit Card (Front & Back) & Multi-Year Nostalgia Archive -->
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h3 class="section-title" style="margin-bottom:2px;">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                Current CCW Permit Card (Front & Back)
+              </h3>
+              <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">Take photos of the front and back of your active permit card. Keeps high-res digital copies accessible anytime.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="archiveCurrentPermitToHistory()" title="Archive this current permit card to your multi-year historical archive" style="border-color:rgba(59,130,246,0.4); color:#93c5fd; font-size:0.78rem;">
+              📦 Archive to History
+            </button>
+          </div>
+
+          <!-- Front & Back Cards Display -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:14px; margin-bottom:18px;">
+            <!-- Front Card -->
+            <div class="permit-card-box">
+              <div class="permit-card-box-header">
+                <span style="font-weight:700; font-size:0.85rem; color:#38bdf8; display:flex; align-items:center; gap:6px;">
+                  <span>🪪</span> Front of Permit
+                </span>
+                <span class="badge-tag" id="ccwFrontStatusBadge" style="font-size:0.68rem;">No Photo</span>
+              </div>
+              <div class="permit-card-preview-wrap" id="ccwFrontPreviewWrap" onclick="openCcwCardZoom('front')">
+                <img id="ccwFrontImg" class="permit-card-img" style="display:none;" alt="CCW Permit Front">
+                <div id="ccwFrontPlaceholder" class="permit-card-placeholder">
+                  <svg viewBox="0 0 24 24" style="width:36px; height:36px; fill:var(--text-dim);"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-top:6px;">No Front Photo</span>
+                  <span style="font-size:0.72rem; color:var(--text-dim);">Snap with camera or upload</span>
+                </div>
+              </div>
+              <input type="file" id="ccwFrontCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCcwPermitPhotoUpload(event, 'front')">
+              <input type="file" id="ccwFrontLibraryInput" accept="image/*" style="display:none;" onchange="handleCcwPermitPhotoUpload(event, 'front')">
+              <div class="permit-card-box-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('ccwFrontCameraInput').click()" style="padding:4px 10px; font-size:0.75rem;">
+                  📷 Camera
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('ccwFrontLibraryInput').click()" style="padding:4px 10px; font-size:0.75rem;">
+                  📁 Library
+                </button>
+                <button type="button" class="btn btn-secondary" id="ccwFrontZoomBtn" onclick="openCcwCardZoom('front')" style="display:none; padding:4px 8px; font-size:0.75rem;" title="Zoom & Inspect">
+                  🔍 Zoom
+                </button>
+                <button type="button" class="btn btn-secondary" id="ccwFrontRotateBtn" onclick="rotateCcwPhoto('front')" style="display:none; padding:4px 8px; font-size:0.75rem;" title="Rotate 90°">
+                  ⟳ Rotate
+                </button>
+                <button type="button" class="btn btn-ghost" id="ccwFrontDeleteBtn" onclick="deleteCcwPermitPhoto('front')" style="display:none; color:#fb7185; padding:4px 8px; font-size:0.75rem;" title="Remove Front Photo">
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- Back Card -->
+            <div class="permit-card-box">
+              <div class="permit-card-box-header">
+                <span style="font-weight:700; font-size:0.85rem; color:#38bdf8; display:flex; align-items:center; gap:6px;">
+                  <span>🪪</span> Back of Permit
+                </span>
+                <span class="badge-tag" id="ccwBackStatusBadge" style="font-size:0.68rem;">No Photo</span>
+              </div>
+              <div class="permit-card-preview-wrap" id="ccwBackPreviewWrap" onclick="openCcwCardZoom('back')">
+                <img id="ccwBackImg" class="permit-card-img" style="display:none;" alt="CCW Permit Back">
+                <div id="ccwBackPlaceholder" class="permit-card-placeholder">
+                  <svg viewBox="0 0 24 24" style="width:36px; height:36px; fill:var(--text-dim);"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-top:6px;">No Back Photo</span>
+                  <span style="font-size:0.72rem; color:var(--text-dim);">Snap with camera or upload</span>
+                </div>
+              </div>
+              <input type="file" id="ccwBackCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCcwPermitPhotoUpload(event, 'back')">
+              <input type="file" id="ccwBackLibraryInput" accept="image/*" style="display:none;" onchange="handleCcwPermitPhotoUpload(event, 'back')">
+              <div class="permit-card-box-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('ccwBackCameraInput').click()" style="padding:4px 10px; font-size:0.75rem;">
+                  📷 Camera
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('ccwBackLibraryInput').click()" style="padding:4px 10px; font-size:0.75rem;">
+                  📁 Library
+                </button>
+                <button type="button" class="btn btn-secondary" id="ccwBackZoomBtn" onclick="openCcwCardZoom('back')" style="display:none; padding:4px 8px; font-size:0.75rem;" title="Zoom & Inspect">
+                  🔍 Zoom
+                </button>
+                <button type="button" class="btn btn-secondary" id="ccwBackRotateBtn" onclick="rotateCcwPhoto('back')" style="display:none; padding:4px 8px; font-size:0.75rem;" title="Rotate 90°">
+                  ⟳ Rotate
+                </button>
+                <button type="button" class="btn btn-ghost" id="ccwBackDeleteBtn" onclick="deleteCcwPermitPhoto('back')" style="display:none; color:#fb7185; padding:4px 8px; font-size:0.75rem;" title="Remove Back Photo">
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multi-Year Nostalgia & Prior Permit History Archive Section -->
+        <div style="margin-bottom:20px; background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h3 class="section-title" style="margin-bottom:2px;">
+                <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                🕰️ Multi-Year CCW Permit Archive & Nostalgia History
+              </h3>
+              <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">Track your licensing history across the years. Preserve past permits, cards, and qualifications to see how your licenses looked over time.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal()" style="border-color:rgba(16,185,129,0.4); color:#34d399; font-size:0.78rem;">
+              + Add Prior Year Permit
+            </button>
+          </div>
+
+          <!-- History Timeline / Grid Container -->
+          <div id="ccwPermitHistoryContainer" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Populated via JS -->
           </div>
         </div>
 
@@ -2464,6 +2719,143 @@
     </div>
   </div>
 
+  <!-- ================= MARK AS SOLD / INACTIVE QUICK MODAL ================= -->
+  <div class="modal-overlay" id="markSoldModal" style="z-index: 10050;">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.25rem;">🏷️</span>
+          <h2 class="modal-title" id="markSoldTitle">Mark Firearm as Sold</h2>
+        </div>
+        <button class="modal-close" onclick="closeMarkSoldModal()">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; line-height:1.5;">
+          Move this firearm to your <strong style="color:#f87171;">Inactive / Sold</strong> list and preserve transfer records, receipts, and history.
+        </p>
+        <form id="markSoldForm" onsubmit="event.preventDefault(); submitMarkSold();">
+          <input type="hidden" id="markSoldFirearmId">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Status Type *</label>
+              <select class="form-control" id="markSoldStatus" required>
+                <option value="Sold">Sold</option>
+                <option value="Inactive">Inactive / Transferred</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date Sold / Transferred</label>
+              <input type="date" class="form-control" id="markSoldDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sale Price ($)</label>
+              <input type="number" step="0.01" class="form-control" id="markSoldPrice" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Buyer / Dealer FFL / Transfer Notes</label>
+              <input type="text" class="form-control" id="markSoldTo" placeholder="e.g. PPT to John Doe at Gunfighter Tactical, DROS #...">
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button type="button" class="btn btn-secondary" onclick="closeMarkSoldModal()">Cancel</button>
+            <button type="submit" class="btn btn-danger" style="background:#e11d48; border-color:#f43f5e; font-weight:700;">
+              🏷️ Confirm & Move to Inactive
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADD / EDIT HISTORICAL CCW PERMIT MODAL ================= -->
+  <div class="modal-overlay" id="historicalPermitModal" style="z-index: 10060;">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.25rem;">🕰️</span>
+          <h2 class="modal-title" id="historicalPermitModalTitle">Archive Prior CCW Permit</h2>
+        </div>
+        <button class="modal-close" onclick="closeHistoricalPermitModal()">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="historicalPermitForm" onsubmit="event.preventDefault(); saveHistoricalPermit();">
+          <input type="hidden" id="historicalPermitId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Validity Period / Years *</label>
+              <input type="text" class="form-control" id="historicalPeriod" placeholder="e.g. 2022 - 2024 or 2022" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Permit Number</label>
+              <input type="text" class="form-control" id="historicalPermitNumber" placeholder="e.g. CCW-2022-0891">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Issue Date</label>
+              <input type="date" class="form-control" id="historicalIssueDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiration Date</label>
+              <input type="date" class="form-control" id="historicalExpDate">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Issuing Agency</label>
+              <input type="text" class="form-control" id="historicalAgency" value="San Diego County Sheriff's Department">
+            </div>
+
+            <!-- Front Photo Upload -->
+            <div class="form-group">
+              <label class="form-label">Front Photo</label>
+              <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="file" id="histFrontCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleHistPhotoUpload(event, 'front')">
+                <input type="file" id="histFrontLibraryInput" accept="image/*" style="display:none;" onchange="handleHistPhotoUpload(event, 'front')">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('histFrontCameraInput').click()" style="padding:4px 8px; font-size:0.75rem;">📷 Camera</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('histFrontLibraryInput').click()" style="padding:4px 8px; font-size:0.75rem;">📁 Library</button>
+                <button type="button" class="btn btn-ghost" id="histFrontClearBtn" onclick="clearHistPhoto('front')" style="display:none; color:#fb7185; padding:4px 6px; font-size:0.75rem;">✕</button>
+              </div>
+              <input type="hidden" id="historicalFrontPhoto">
+              <div id="histFrontThumbWrap" style="height:100px; background:#070b12; border:1px solid var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <span id="histFrontPlaceholder" style="font-size:0.75rem; color:var(--text-dim);">No Front Photo</span>
+                <img id="histFrontThumb" style="display:none; width:100%; height:100%; object-fit:contain;" alt="Front Preview">
+              </div>
+            </div>
+
+            <!-- Back Photo Upload -->
+            <div class="form-group">
+              <label class="form-label">Back Photo</label>
+              <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="file" id="histBackCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleHistPhotoUpload(event, 'back')">
+                <input type="file" id="histBackLibraryInput" accept="image/*" style="display:none;" onchange="handleHistPhotoUpload(event, 'back')">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('histBackCameraInput').click()" style="padding:4px 8px; font-size:0.75rem;">📷 Camera</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('histBackLibraryInput').click()" style="padding:4px 8px; font-size:0.75rem;">📁 Library</button>
+                <button type="button" class="btn btn-ghost" id="histBackClearBtn" onclick="clearHistPhoto('back')" style="display:none; color:#fb7185; padding:4px 6px; font-size:0.75rem;">✕</button>
+              </div>
+              <input type="hidden" id="historicalBackPhoto">
+              <div id="histBackThumbWrap" style="height:100px; background:#070b12; border:1px solid var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <span id="histBackPlaceholder" style="font-size:0.75rem; color:var(--text-dim);">No Back Photo</span>
+                <img id="histBackThumb" style="display:none; width:100%; height:100%; object-fit:contain;" alt="Back Preview">
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label class="form-label">Nostalgia Notes & Handguns Listed</label>
+              <textarea class="form-control" id="historicalNotes" placeholder="Memories, handguns qualified on this card, training academy, paper vs plastic license..."></textarea>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--border-color); padding-top:14px;">
+            <button type="button" class="btn btn-secondary" onclick="closeHistoricalPermitModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" style="background:#10b981; border-color:#059669; font-weight:700;">
+              💾 Save to Permit History
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div class="toast" id="toast">
     <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:#34d399;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -2548,12 +2940,32 @@
     // Render Metrics
     function renderSummary(summary) {
       if (!summary) return;
-      document.getElementById('summaryTotal').textContent = `${formatNumber(summary.totalFirearms)} Firearms`;
+      const inactiveCount = summary.totalInactiveFirearms !== undefined 
+        ? summary.totalInactiveFirearms 
+        : firearms.filter(f => f.status === 'Inactive' || f.status === 'Sold').length;
+
+      if (inactiveCount > 0) {
+        document.getElementById('summaryTotal').innerHTML = `${formatNumber(summary.totalFirearms)} Active <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-left:2px;">(${inactiveCount} Inactive)</span>`;
+      } else {
+        document.getElementById('summaryTotal').textContent = `${formatNumber(summary.totalFirearms)} Firearms`;
+      }
+
       document.getElementById('summaryValue').textContent = formatCurrency(summary.totalReplacementValue);
       document.getElementById('summaryAccessories').textContent = formatCurrency(summary.totalAccessoriesValue);
       document.getElementById('summaryInsured').textContent = formatCurrency(summary.grandTotalInsuredValue);
       const roundsEl = document.getElementById('summaryRounds');
       if (roundsEl) roundsEl.textContent = `${formatNumber(summary.totalRoundsTracked)} Rds`;
+
+      // Update Inactive Chip badge count
+      const chipBadge = document.getElementById('inactiveBadgeCount');
+      if (chipBadge) {
+        if (inactiveCount > 0) {
+          chipBadge.textContent = inactiveCount;
+          chipBadge.style.display = 'inline-block';
+        } else {
+          chipBadge.style.display = 'none';
+        }
+      }
     }
 
     // Render Grid
@@ -2561,13 +2973,20 @@
       const grid = document.getElementById('firearmsGrid');
       grid.innerHTML = '';
 
+      const isInactive = (f) => f.status === 'Inactive' || f.status === 'Sold';
       const search = document.getElementById('searchInput').value.trim().toLowerCase();
       let list = [...firearms];
 
-      if (currentFilter === 'CCW') {
-        list = list.filter(f => f.onCCW === true);
-      } else if (currentFilter !== 'All') {
-        list = list.filter(f => f.type === currentFilter);
+      if (currentFilter === 'Inactive') {
+        list = list.filter(f => isInactive(f));
+      } else {
+        // Active inventory view: filter out inactive/sold firearms
+        list = list.filter(f => !isInactive(f));
+        if (currentFilter === 'CCW') {
+          list = list.filter(f => f.onCCW === true);
+        } else if (currentFilter !== 'All') {
+          list = list.filter(f => f.type === currentFilter);
+        }
       }
 
       if (search) {
@@ -2577,6 +2996,7 @@
           (f.caliber || '').toLowerCase().includes(search) ||
           (f.serialNumber || '').toLowerCase().includes(search) ||
           (f.location || '').toLowerCase().includes(search) ||
+          (f.soldTo || '').toLowerCase().includes(search) ||
           (f.accessories || []).some(a => (a.name || '').toLowerCase().includes(search))
         );
       }
@@ -2616,19 +3036,31 @@
       });
 
       if (list.length === 0) {
-        grid.innerHTML = `
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            <h3>No firearms found</h3>
-            <p style="margin-top:4px;">Try refining your filter or click "Add Firearm" to register one in your armory.</p>
-          </div>
-        `;
+        if (currentFilter === 'Inactive') {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              <h3>No Inactive or Sold Firearms</h3>
+              <p style="margin-top:4px;">All firearms in your armory are currently Active. To mark a firearm as sold or inactive, open its details and click "Mark Sold / Inactive".</p>
+            </div>
+          `;
+        } else {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              <h3>No firearms found</h3>
+              <p style="margin-top:4px;">Try refining your filter or click "Add Firearm" to register one in your armory.</p>
+            </div>
+          `;
+        }
         return;
       }
 
       list.forEach(f => {
+        const isSoldOrInactive = isInactive(f);
         const card = document.createElement('div');
         card.className = 'firearm-card';
+        if (isSoldOrInactive) card.classList.add('card-inactive');
         card.onclick = () => openDetailModal(f.id);
 
         const photoUrl = (f.images && f.images.length > 0) ? f.images[0] : null;
@@ -2656,6 +3088,30 @@
             </span>`
           : '';
 
+        const inactiveBadgeHtml = isSoldOrInactive
+          ? `<span class="card-badge-inactive" title="${f.status === 'Sold' ? 'Sold Firearm' : 'Inactive / Transferred'}">
+              <span>🏷️</span>
+              <span>${f.status === 'Sold' ? 'Sold' : 'Inactive'}</span>
+            </span>`
+          : '';
+
+        let priceHtml = '';
+        if (f.status === 'Sold' && f.soldPrice) {
+          priceHtml = `
+            <div class="card-val">
+              <div class="card-price-primary" style="color:#f87171;">${formatCurrency(f.soldPrice)}</div>
+              <div class="card-price-sub">${f.soldDate ? `Sold ${formatDateUS(f.soldDate)}` : 'Sold Price'}</div>
+            </div>
+          `;
+        } else {
+          priceHtml = `
+            <div class="card-val">
+              <div class="card-price-primary">${formatCurrency(f.replacementValue || f.purchasePrice || 0)}</div>
+              <div class="card-price-sub">${isSoldOrInactive ? 'Prior Value' : 'Value'}</div>
+            </div>
+          `;
+        }
+
         card.innerHTML = `
           <div class="card-photo-wrapper">
             ${photoHtml}
@@ -2663,6 +3119,7 @@
           <div class="card-photo-bar">
             <div style="display:flex; align-items:center; gap:6px;">
               <span class="card-badge-type">${f.type || 'Firearm'}</span>
+              ${inactiveBadgeHtml}
               ${ccwBadgeHtml}
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
@@ -2678,10 +3135,7 @@
                   ${f.caliber ? `<span class="card-caliber-badge">${f.caliber}</span>` : ''}
                 </div>
               </div>
-              <div class="card-val">
-                <div class="card-price-primary">${formatCurrency(f.replacementValue || f.purchasePrice || 0)}</div>
-                <div class="card-price-sub">Value</div>
-              </div>
+              ${priceHtml}
             </div>
 
             <div class="card-specs-row">
@@ -2761,6 +3215,51 @@
           ccwStatusEl.innerHTML = '<span style="color:#fbbf24; font-weight:700;">🛡️ Yes &bull; On Permit</span>';
         } else {
           ccwStatusEl.innerHTML = '<span style="color:var(--text-dim);">No (Not on permit)</span>';
+        }
+      }
+
+      // Vault Status & Sold Banner
+      const isSoldOrInactive = selectedFirearm.status === 'Sold' || selectedFirearm.status === 'Inactive';
+      const statusEl = document.getElementById('detailStatus');
+      if (statusEl) {
+        if (selectedFirearm.status === 'Sold') {
+          statusEl.innerHTML = '<span style="color:#f87171; font-weight:700;">🏷️ Sold</span>';
+        } else if (selectedFirearm.status === 'Inactive') {
+          statusEl.innerHTML = '<span style="color:#94a3b8; font-weight:700;">📦 Inactive</span>';
+        } else {
+          statusEl.innerHTML = '<span style="color:#34d399; font-weight:700;">● Active Inventory</span>';
+        }
+      }
+
+      const soldBanner = document.getElementById('detailSoldBanner');
+      if (soldBanner) {
+        if (isSoldOrInactive) {
+          soldBanner.style.display = 'block';
+          document.getElementById('detailSoldDate').textContent = formatDateUS(selectedFirearm.soldDate);
+          document.getElementById('detailSoldPrice').textContent = selectedFirearm.soldPrice ? formatCurrency(selectedFirearm.soldPrice) : 'Not Specified';
+          document.getElementById('detailSoldTo').textContent = selectedFirearm.soldTo || 'None recorded';
+        } else {
+          soldBanner.style.display = 'none';
+        }
+      }
+
+      // Update Header Toggle Sold / Reactivate button
+      const toggleSoldBtn = document.getElementById('toggleSoldDetailBtn');
+      const toggleIcon = document.getElementById('toggleSoldDetailIcon');
+      const toggleLabel = document.getElementById('toggleSoldDetailLabel');
+      if (toggleSoldBtn && toggleIcon && toggleLabel) {
+        if (isSoldOrInactive) {
+          toggleSoldBtn.style.color = '#34d399';
+          toggleSoldBtn.style.borderColor = 'rgba(52,211,153,0.4)';
+          toggleIcon.textContent = '✓';
+          toggleLabel.textContent = 'Reactivate';
+          toggleSoldBtn.title = 'Restore this firearm to Active vault inventory';
+        } else {
+          toggleSoldBtn.style.color = '#f59e0b';
+          toggleSoldBtn.style.borderColor = 'rgba(245,158,11,0.4)';
+          toggleIcon.textContent = '🏷️';
+          toggleLabel.textContent = 'Mark Sold';
+          toggleSoldBtn.title = 'Mark as sold or inactive and record transfer';
         }
       }
 
@@ -2952,7 +3451,9 @@
       const tbody = document.getElementById('insuranceScheduleTbody');
       tbody.innerHTML = '';
 
-      firearms.forEach(f => {
+      const activeGuns = firearms.filter(f => f.status !== 'Inactive' && f.status !== 'Sold');
+
+      activeGuns.forEach(f => {
         const cost = Number(f.purchasePrice) || 0;
         const repVal = Number(f.replacementValue) || 0;
         totalCost += cost;
@@ -2973,7 +3474,7 @@
         tbody.appendChild(tr);
       });
 
-      document.getElementById('insRepCount').textContent = firearms.length;
+      document.getElementById('insRepCount').textContent = activeGuns.length;
       document.getElementById('insRepCost').textContent = formatCurrency(totalCost);
       document.getElementById('insRepAccVal').textContent = formatCurrency(totalAcc);
       document.getElementById('insRepTotalVal').textContent = formatCurrency(totalVal + totalAcc);
@@ -2990,7 +3491,9 @@
       const container = document.getElementById('compareMatrixContainer');
       container.innerHTML = '';
 
-      firearms.forEach(f => {
+      const activeGuns = firearms.filter(f => f.status !== 'Inactive' && f.status !== 'Sold');
+
+      activeGuns.forEach(f => {
         const col = document.createElement('div');
         col.className = 'compare-column';
 
@@ -3056,6 +3559,11 @@
       document.getElementById('formPurchaseDate').value = item ? (item.purchaseDate || '') : '';
       document.getElementById('formNotes').value = item ? (item.notes || '') : '';
       document.getElementById('formOnCCW').checked = item ? Boolean(item.onCCW) : false;
+      document.getElementById('formStatus').value = (item && item.status) ? item.status : 'Active';
+      document.getElementById('formSoldDate').value = (item && item.soldDate) ? item.soldDate : '';
+      document.getElementById('formSoldPrice').value = (item && item.soldPrice !== undefined && item.soldPrice !== null && item.soldPrice !== '') ? item.soldPrice : '';
+      document.getElementById('formSoldTo').value = (item && item.soldTo) ? item.soldTo : '';
+      toggleSoldFormFields();
 
       formImages = item ? [...(item.images || [])] : [];
       formAccessories = item ? JSON.parse(JSON.stringify(item.accessories || [])) : [];
@@ -3070,6 +3578,22 @@
       renderFormDocuments();
 
       document.getElementById('formModal').classList.add('active');
+    }
+
+    function toggleSoldFormFields() {
+      const status = document.getElementById('formStatus').value;
+      const soldDetails = document.getElementById('formSoldDetails');
+      if (soldDetails) {
+        if (status === 'Sold' || status === 'Inactive') {
+          soldDetails.style.display = 'block';
+          const dateInput = document.getElementById('formSoldDate');
+          if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+          }
+        } else {
+          soldDetails.style.display = 'none';
+        }
+      }
     }
 
     function closeFormModal() {
@@ -4454,6 +4978,10 @@
         purchasePrice: parseFloat(document.getElementById('formPurchasePrice').value) || 0,
         replacementValue: parseFloat(document.getElementById('formReplacementValue').value) || 0,
         purchaseDate: document.getElementById('formPurchaseDate').value,
+        status: document.getElementById('formStatus').value,
+        soldDate: document.getElementById('formSoldDate').value,
+        soldPrice: parseFloat(document.getElementById('formSoldPrice').value) || 0,
+        soldTo: document.getElementById('formSoldTo').value.trim(),
         notes: document.getElementById('formNotes').value.trim(),
         onCCW: document.getElementById('formOnCCW').checked,
         images: formImages,
@@ -4503,6 +5031,87 @@
         showToast('Failed to delete firearm');
       }
     };
+
+    // Mark as Sold / Inactive & Reactivate Operations
+    function openMarkSoldModal(id) {
+      const f = firearms.find(item => item.id === id) || selectedFirearm;
+      if (!f) return;
+      document.getElementById('markSoldFirearmId').value = f.id;
+      document.getElementById('markSoldTitle').textContent = `Mark ${f.make} ${f.model} as Sold / Inactive`;
+      document.getElementById('markSoldStatus').value = f.status === 'Inactive' ? 'Inactive' : 'Sold';
+      document.getElementById('markSoldDate').value = f.soldDate || new Date().toISOString().split('T')[0];
+      document.getElementById('markSoldPrice').value = (f.soldPrice !== undefined && f.soldPrice !== null && f.soldPrice !== 0) ? f.soldPrice : '';
+      document.getElementById('markSoldTo').value = f.soldTo || '';
+      document.getElementById('markSoldModal').classList.add('active');
+    }
+
+    function closeMarkSoldModal() {
+      document.getElementById('markSoldModal').classList.remove('active');
+    }
+
+    async function submitMarkSold() {
+      const id = document.getElementById('markSoldFirearmId').value;
+      const status = document.getElementById('markSoldStatus').value;
+      const soldDate = document.getElementById('markSoldDate').value;
+      const soldPrice = parseFloat(document.getElementById('markSoldPrice').value) || 0;
+      const soldTo = document.getElementById('markSoldTo').value.trim();
+
+      try {
+        const res = await fetch(`/api/firearms/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, soldDate, soldPrice, soldTo })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Firearm marked as ${status} and moved to Inactive list`);
+          closeMarkSoldModal();
+          await fetchFirearms();
+          if (document.getElementById('detailModal').classList.contains('active')) {
+            openDetailModal(id);
+          }
+        } else {
+          showToast('Failed to update status');
+        }
+      } catch (err) {
+        showToast('Error updating status');
+      }
+    }
+
+    async function markFirearmActive(id) {
+      const f = firearms.find(item => item.id === id) || selectedFirearm;
+      const name = f ? `${f.make} ${f.model}` : 'Firearm';
+      if (!confirm(`Reactivate ${name} back to your Active inventory?`)) return;
+
+      try {
+        const res = await fetch(`/api/firearms/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Active' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`${name} restored to Active Vault inventory`);
+          await fetchFirearms();
+          if (document.getElementById('detailModal').classList.contains('active')) {
+            openDetailModal(id);
+          }
+        } else {
+          showToast('Failed to reactivate firearm');
+        }
+      } catch (err) {
+        showToast('Error reactivating firearm');
+      }
+    }
+
+    function handleDetailStatusAction() {
+      if (!selectedFirearm) return;
+      if (selectedFirearm.status === 'Sold' || selectedFirearm.status === 'Inactive') {
+        markFirearmActive(selectedFirearm.id);
+      } else {
+        openMarkSoldModal(selectedFirearm.id);
+      }
+    }
 
     // ----------------------------------------------------------------------
     // Interactive Photo Zoom & Inspection Lightbox (Rock-Solid & Jitter-Free)
@@ -5099,6 +5708,13 @@
         : [...defaultLinks];
       renderCcwLinks();
 
+      // Load CCW permit card photos and multi-year historical archive
+      currentCcwFrontPhoto = ccwData.frontPhoto || '';
+      currentCcwBackPhoto = ccwData.backPhoto || '';
+      currentCcwPermitHistory = Array.isArray(ccwData.permitHistory) ? [...ccwData.permitHistory] : [];
+      renderCcwPermitCards();
+      renderCcwPermitHistory();
+
       document.getElementById('ccwModal').classList.add('active');
     }
 
@@ -5294,7 +5910,12 @@
         uploadReminderFreq: document.getElementById('ccwUploadReminderFreq').value,
 
         // Important Links
-        importantLinks: formCcwLinks.filter(l => (l.title && l.title.trim()) || (l.url && l.url.trim()))
+        importantLinks: formCcwLinks.filter(l => (l.title && l.title.trim()) || (l.url && l.url.trim())),
+
+        // CCW Card Photos & Nostalgia Archive
+        frontPhoto: currentCcwFrontPhoto,
+        backPhoto: currentCcwBackPhoto,
+        permitHistory: currentCcwPermitHistory
       };
 
       try {
@@ -5346,6 +5967,466 @@
         btn.disabled = false;
         btn.textContent = '📧 Send Test Alert';
       }
+    }
+
+    // ----------------------------------------------------------------------
+    // CCW Permit Front & Back Card Photos & Multi-Year Nostalgia Archive
+    // ----------------------------------------------------------------------
+    let currentCcwFrontPhoto = '';
+    let currentCcwBackPhoto = '';
+    let currentCcwPermitHistory = [];
+    let histFrontPhotoTemp = '';
+    let histBackPhotoTemp = '';
+
+    // Render Current CCW Front and Back Card Preview
+    function renderCcwPermitCards() {
+      // Front
+      const frontImg = document.getElementById('ccwFrontImg');
+      const frontPlaceholder = document.getElementById('ccwFrontPlaceholder');
+      const frontBadge = document.getElementById('ccwFrontStatusBadge');
+      const frontZoomBtn = document.getElementById('ccwFrontZoomBtn');
+      const frontRotateBtn = document.getElementById('ccwFrontRotateBtn');
+      const frontDeleteBtn = document.getElementById('ccwFrontDeleteBtn');
+
+      if (currentCcwFrontPhoto) {
+        frontImg.src = currentCcwFrontPhoto;
+        frontImg.style.display = 'block';
+        frontPlaceholder.style.display = 'none';
+        frontBadge.textContent = 'Photo On File';
+        frontBadge.style.background = 'rgba(16,185,129,0.2)';
+        frontBadge.style.color = '#34d399';
+        frontZoomBtn.style.display = 'inline-flex';
+        frontRotateBtn.style.display = 'inline-flex';
+        frontDeleteBtn.style.display = 'inline-flex';
+      } else {
+        frontImg.src = '';
+        frontImg.style.display = 'none';
+        frontPlaceholder.style.display = 'flex';
+        frontBadge.textContent = 'No Photo';
+        frontBadge.style.background = 'rgba(148,163,184,0.15)';
+        frontBadge.style.color = '#94a3b8';
+        frontZoomBtn.style.display = 'none';
+        frontRotateBtn.style.display = 'none';
+        frontDeleteBtn.style.display = 'none';
+      }
+
+      // Back
+      const backImg = document.getElementById('ccwBackImg');
+      const backPlaceholder = document.getElementById('ccwBackPlaceholder');
+      const backBadge = document.getElementById('ccwBackStatusBadge');
+      const backZoomBtn = document.getElementById('ccwBackZoomBtn');
+      const backRotateBtn = document.getElementById('ccwBackRotateBtn');
+      const backDeleteBtn = document.getElementById('ccwBackDeleteBtn');
+
+      if (currentCcwBackPhoto) {
+        backImg.src = currentCcwBackPhoto;
+        backImg.style.display = 'block';
+        backPlaceholder.style.display = 'none';
+        backBadge.textContent = 'Photo On File';
+        backBadge.style.background = 'rgba(16,185,129,0.2)';
+        backBadge.style.color = '#34d399';
+        backZoomBtn.style.display = 'inline-flex';
+        backRotateBtn.style.display = 'inline-flex';
+        backDeleteBtn.style.display = 'inline-flex';
+      } else {
+        backImg.src = '';
+        backImg.style.display = 'none';
+        backPlaceholder.style.display = 'flex';
+        backBadge.textContent = 'No Photo';
+        backBadge.style.background = 'rgba(148,163,184,0.15)';
+        backBadge.style.color = '#94a3b8';
+        backZoomBtn.style.display = 'none';
+        backRotateBtn.style.display = 'none';
+        backDeleteBtn.style.display = 'none';
+      }
+    }
+
+    // Handle Upload for Current Permit Card (Front or Back)
+    async function handleCcwPermitPhotoUpload(event, side) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      showToast(`Optimizing & uploading ${side === 'front' ? 'Front' : 'Back'} photo...`);
+      try {
+        const base64Data = await processAndCompressImage(file);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (side === 'front') {
+            currentCcwFrontPhoto = data.url;
+          } else {
+            currentCcwBackPhoto = data.url;
+          }
+          renderCcwPermitCards();
+          await saveCcwPhotosDirect();
+          showToast(`✅ ${side === 'front' ? 'Front' : 'Back'} permit photo saved!`);
+        } else {
+          showToast('Failed to upload photo');
+        }
+      } catch (err) {
+        console.error('CCW photo upload error:', err);
+        showToast('Photo upload error');
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    async function deleteCcwPermitPhoto(side) {
+      if (!confirm(`Are you sure you want to remove the ${side === 'front' ? 'Front' : 'Back'} photo of your CCW permit?`)) return;
+      if (side === 'front') {
+        currentCcwFrontPhoto = '';
+      } else {
+        currentCcwBackPhoto = '';
+      }
+      renderCcwPermitCards();
+      await saveCcwPhotosDirect();
+      showToast(`${side === 'front' ? 'Front' : 'Back'} photo removed`);
+    }
+
+    async function rotateCcwPhoto(side) {
+      const currentUrl = side === 'front' ? currentCcwFrontPhoto : currentCcwBackPhoto;
+      if (!currentUrl) return;
+
+      showToast('Rotating permit card 90°...');
+      try {
+        const rotatedData = await rotateImage(currentUrl, 90);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: rotatedData })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (side === 'front') {
+            currentCcwFrontPhoto = data.url;
+          } else {
+            currentCcwBackPhoto = data.url;
+          }
+          renderCcwPermitCards();
+          await saveCcwPhotosDirect();
+          showToast('Permit card rotated & saved');
+        }
+      } catch (err) {
+        showToast('Failed to rotate photo');
+      }
+    }
+
+    async function saveCcwPhotosDirect() {
+      try {
+        await fetch('/api/ccw', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            frontPhoto: currentCcwFrontPhoto,
+            backPhoto: currentCcwBackPhoto,
+            permitHistory: currentCcwPermitHistory
+          })
+        });
+      } catch (e) {
+        console.error('Failed to auto-save CCW photos:', e);
+      }
+    }
+
+    function openCcwCardZoom(side) {
+      const url = side === 'front' ? currentCcwFrontPhoto : currentCcwBackPhoto;
+      if (!url) return;
+      openPhotoZoomDirect(url, `CCW Permit Card - ${side === 'front' ? 'Front' : 'Back'}`);
+    }
+
+    // Interactive Photo Zoom direct launcher for any standalone image URL
+    function openPhotoZoomDirect(url, title = 'Photo Zoom & Inspection') {
+      const modal = document.getElementById('photoZoomModal');
+      const img = document.getElementById('photoZoomImg');
+      const titleEl = document.getElementById('photoZoomTitleText');
+      const counterEl = document.getElementById('photoZoomCounter');
+      const prevBtn = document.getElementById('photoZoomPrevBtn');
+      const nextBtn = document.getElementById('photoZoomNextBtn');
+      const slider = document.getElementById('photoZoomSlider');
+
+      if (!modal || !img) return;
+
+      zoomState.scale = 1;
+      zoomState.panX = 0;
+      zoomState.panY = 0;
+      zoomState.rotation = 0;
+      zoomState.isDragging = false;
+
+      if (slider) slider.value = 1;
+      img.src = url;
+      if (titleEl) titleEl.textContent = title;
+      if (counterEl) counterEl.textContent = '1 / 1';
+      if (prevBtn) prevBtn.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
+
+      updateZoomTransform();
+      modal.classList.add('active');
+    }
+
+    // Multi-Year History Archive Operations
+    function renderCcwPermitHistory() {
+      const container = document.getElementById('ccwPermitHistoryContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!currentCcwPermitHistory || currentCcwPermitHistory.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:24px 16px; background:rgba(0,0,0,0.2); border:1px dashed var(--border-color); border-radius:var(--radius-sm); color:var(--text-muted);">
+            <div style="font-size:1.6rem; margin-bottom:6px;">🗂️</div>
+            <div style="font-weight:700; font-size:0.9rem; color:var(--text-main);">No Prior CCW Permits in Archive</div>
+            <p style="font-size:0.78rem; margin:4px 0 10px 0; color:var(--text-dim);">
+              Keep a timeline of your past CCW cards across the years for nostalgia and compliance tracking.
+            </p>
+            <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal()" style="font-size:0.75rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
+              + Add Your First Historical Permit
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort by expiration/period year descending (most recent first)
+      const sorted = [...currentCcwPermitHistory].sort((a, b) => {
+        const yearA = parseInt(String(a.period || a.expirationDate || '0').match(/\d{4}/)?.[0] || '0');
+        const yearB = parseInt(String(b.period || b.expirationDate || '0').match(/\d{4}/)?.[0] || '0');
+        return yearB - yearA;
+      });
+
+      sorted.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'historical-permit-card';
+
+        const frontHtml = item.frontPhoto
+          ? `<div style="cursor:pointer; position:relative; width:130px; height:85px; border-radius:6px; overflow:hidden; border:1px solid rgba(56,189,248,0.3); background:#070b12;" onclick="openPhotoZoomDirect('${item.frontPhoto}', '${item.period} Permit - Front')" title="Click to zoom Front">
+              <img src="${item.frontPhoto}" style="width:100%; height:100%; object-fit:contain;">
+              <span style="position:absolute; bottom:2px; right:3px; background:rgba(0,0,0,0.8); color:#38bdf8; font-size:0.6rem; font-weight:700; padding:1px 4px; border-radius:3px;">Front 🔍</span>
+            </div>`
+          : `<div style="width:130px; height:85px; border-radius:6px; border:1px dashed var(--border-color); background:#070b12; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.7rem;"><span>No Front</span></div>`;
+
+        const backHtml = item.backPhoto
+          ? `<div style="cursor:pointer; position:relative; width:130px; height:85px; border-radius:6px; overflow:hidden; border:1px solid rgba(56,189,248,0.3); background:#070b12;" onclick="openPhotoZoomDirect('${item.backPhoto}', '${item.period} Permit - Back')" title="Click to zoom Back">
+              <img src="${item.backPhoto}" style="width:100%; height:100%; object-fit:contain;">
+              <span style="position:absolute; bottom:2px; right:3px; background:rgba(0,0,0,0.8); color:#38bdf8; font-size:0.6rem; font-weight:700; padding:1px 4px; border-radius:3px;">Back 🔍</span>
+            </div>`
+          : `<div style="width:130px; height:85px; border-radius:6px; border:1px dashed var(--border-color); background:#070b12; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.7rem;"><span>No Back</span></div>`;
+
+        const datesText = (item.issueDate || item.expirationDate)
+          ? `${item.issueDate ? formatDateUS(item.issueDate) : '?'} → ${item.expirationDate ? formatDateUS(item.expirationDate) : '?'}`
+          : '';
+
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="badge-tag" style="background:#0284c7; color:#fff; font-weight:800; font-size:0.82rem; padding:3px 8px;">${item.period || 'Prior Permit'}</span>
+              ${item.permitNumber ? `<span style="font-size:0.78rem; color:var(--text-muted); font-family:monospace;">#${item.permitNumber}</span>` : ''}
+              ${datesText ? `<span style="font-size:0.75rem; color:#94a3b8; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px;">${datesText}</span>` : ''}
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal('${item.id}')" style="padding:2px 8px; font-size:0.72rem;">
+                ✏️ Edit
+              </button>
+              <button type="button" class="btn btn-ghost" onclick="deleteHistoricalPermit('${item.id}')" style="padding:2px 6px; font-size:0.72rem; color:#fb7185;" title="Remove this archived permit">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            ${frontHtml}
+            ${backHtml}
+            <div style="flex:1; min-width:180px; font-size:0.8rem; line-height:1.45;">
+              <div style="color:#93c5fd; font-weight:600; font-size:0.78rem;">${item.agency || "San Diego County Sheriff's Department"}</div>
+              ${item.notes ? `<div style="color:var(--text-muted); margin-top:4px; font-style:italic;">"${item.notes}"</div>` : `<div style="color:var(--text-dim); margin-top:4px;">No notes recorded</div>`}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 1-Click: Archive Current CCW Permit Card to Multi-Year History
+    async function archiveCurrentPermitToHistory() {
+      if (!currentCcwFrontPhoto && !currentCcwBackPhoto) {
+        if (!confirm('You have not uploaded front or back photos for your current permit yet. Do you still want to archive the current validity period?')) {
+          return;
+        }
+      }
+
+      const expYear = ccwData && ccwData.expirationDate ? ccwData.expirationDate.slice(0, 4) : new Date().getFullYear();
+      const issueYear = ccwData && ccwData.issueDate ? ccwData.issueDate.slice(0, 4) : (parseInt(expYear) - 2);
+      const defaultPeriod = `${issueYear} - ${expYear}`;
+
+      const period = prompt('Enter validity period for this archived permit:', defaultPeriod);
+      if (!period) return;
+
+      const newEntry = {
+        id: 'hist-' + Date.now(),
+        period: period.trim(),
+        permitNumber: (ccwData && ccwData.permitNumber) || '',
+        issueDate: (ccwData && ccwData.issueDate) || '',
+        expirationDate: (ccwData && ccwData.expirationDate) || '',
+        agency: (ccwData && ccwData.issuingAgency) || "San Diego County Sheriff's Department",
+        frontPhoto: currentCcwFrontPhoto,
+        backPhoto: currentCcwBackPhoto,
+        notes: `Archived from active CCW permit card on ${new Date().toLocaleDateString()}`,
+        archivedAt: new Date().toISOString()
+      };
+
+      currentCcwPermitHistory.unshift(newEntry);
+      renderCcwPermitHistory();
+      await saveCcwPhotosDirect();
+      showToast(`✅ ${period} permit archived to multi-year history!`);
+    }
+
+    // Modal: Open Add / Edit Historical Permit Modal
+    function openHistoricalPermitModal(id) {
+      document.getElementById('historicalPermitId').value = id || '';
+      const isEdit = Boolean(id);
+      document.getElementById('historicalPermitModalTitle').textContent = isEdit ? 'Edit Archived Prior Permit' : 'Archive Prior CCW Permit';
+
+      let item = null;
+      if (isEdit) {
+        item = currentCcwPermitHistory.find(h => h.id === id);
+      }
+
+      document.getElementById('historicalPeriod').value = item ? item.period : '';
+      document.getElementById('historicalPermitNumber').value = item ? (item.permitNumber || '') : '';
+      document.getElementById('historicalIssueDate').value = item ? (item.issueDate || '') : '';
+      document.getElementById('historicalExpDate').value = item ? (item.expirationDate || '') : '';
+      document.getElementById('historicalAgency').value = item ? (item.agency || "San Diego County Sheriff's Department") : "San Diego County Sheriff's Department";
+      document.getElementById('historicalNotes').value = item ? (item.notes || '') : '';
+
+      histFrontPhotoTemp = item ? (item.frontPhoto || '') : '';
+      histBackPhotoTemp = item ? (item.backPhoto || '') : '';
+      updateHistPhotoPreviews();
+
+      document.getElementById('historicalPermitModal').classList.add('active');
+    }
+
+    function closeHistoricalPermitModal() {
+      document.getElementById('historicalPermitModal').classList.remove('active');
+    }
+
+    function updateHistPhotoPreviews() {
+      // Front
+      const fImg = document.getElementById('histFrontThumb');
+      const fPl = document.getElementById('histFrontPlaceholder');
+      const fClear = document.getElementById('histFrontClearBtn');
+      document.getElementById('historicalFrontPhoto').value = histFrontPhotoTemp;
+      if (histFrontPhotoTemp) {
+        fImg.src = histFrontPhotoTemp;
+        fImg.style.display = 'block';
+        fPl.style.display = 'none';
+        fClear.style.display = 'inline-flex';
+      } else {
+        fImg.src = '';
+        fImg.style.display = 'none';
+        fPl.style.display = 'block';
+        fClear.style.display = 'none';
+      }
+
+      // Back
+      const bImg = document.getElementById('histBackThumb');
+      const bPl = document.getElementById('histBackPlaceholder');
+      const bClear = document.getElementById('histBackClearBtn');
+      document.getElementById('historicalBackPhoto').value = histBackPhotoTemp;
+      if (histBackPhotoTemp) {
+        bImg.src = histBackPhotoTemp;
+        bImg.style.display = 'block';
+        bPl.style.display = 'none';
+        bClear.style.display = 'inline-flex';
+      } else {
+        bImg.src = '';
+        bImg.style.display = 'none';
+        bPl.style.display = 'block';
+        bClear.style.display = 'none';
+      }
+    }
+
+    async function handleHistPhotoUpload(event, side) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      showToast(`Uploading ${side === 'front' ? 'Front' : 'Back'} photo...`);
+      try {
+        const base64Data = await processAndCompressImage(file);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (side === 'front') {
+            histFrontPhotoTemp = data.url;
+          } else {
+            histBackPhotoTemp = data.url;
+          }
+          updateHistPhotoPreviews();
+          showToast(`${side === 'front' ? 'Front' : 'Back'} photo ready`);
+        }
+      } catch (err) {
+        showToast('Photo upload failed');
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    function clearHistPhoto(side) {
+      if (side === 'front') {
+        histFrontPhotoTemp = '';
+      } else {
+        histBackPhotoTemp = '';
+      }
+      updateHistPhotoPreviews();
+    }
+
+    async function saveHistoricalPermit() {
+      const id = document.getElementById('historicalPermitId').value;
+      const period = document.getElementById('historicalPeriod').value.trim();
+      if (!period) {
+        showToast('Please enter a validity period or year');
+        return;
+      }
+
+      const entry = {
+        id: id || ('hist-' + Date.now()),
+        period: period,
+        permitNumber: document.getElementById('historicalPermitNumber').value.trim(),
+        issueDate: document.getElementById('historicalIssueDate').value,
+        expirationDate: document.getElementById('historicalExpDate').value,
+        agency: document.getElementById('historicalAgency').value.trim(),
+        frontPhoto: histFrontPhotoTemp,
+        backPhoto: histBackPhotoTemp,
+        notes: document.getElementById('historicalNotes').value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      if (id) {
+        const idx = currentCcwPermitHistory.findIndex(h => h.id === id);
+        if (idx !== -1) currentCcwPermitHistory[idx] = entry;
+      } else {
+        currentCcwPermitHistory.unshift(entry);
+      }
+
+      renderCcwPermitHistory();
+      await saveCcwPhotosDirect();
+      closeHistoricalPermitModal();
+      showToast('Prior CCW permit saved to nostalgia archive');
+    }
+
+    async function deleteHistoricalPermit(id) {
+      const item = currentCcwPermitHistory.find(h => h.id === id);
+      const title = item ? item.period : 'permit';
+      if (!confirm(`Are you sure you want to remove the ${title} permit from your historical archive?`)) return;
+
+      currentCcwPermitHistory = currentCcwPermitHistory.filter(h => h.id !== id);
+      renderCcwPermitHistory();
+      await saveCcwPhotosDirect();
+      showToast('Archived permit removed');
     }
 
     // Header CCW button binding

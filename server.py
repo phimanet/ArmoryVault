@@ -210,6 +210,9 @@ def get_seed_data():
                 {"title": "California DOJ LiveScan Form (BCIA 8016)", "url": "https://oag.ca.gov/fingerprints/forms", "category": "LiveScan"}
             ],
             "qualifyingGuns": [],
+            "frontPhoto": "",
+            "backPhoto": "",
+            "permitHistory": [],
             "lastAlertSent": None,
             "alertHistory": []
         },
@@ -857,27 +860,36 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_error_json(404, "Endpoint not found")
 
     def _calc_summary(self, items):
-        total_items = len(items)
-        total_purchase = sum(float(it.get("purchasePrice") or 0) for it in items)
-        total_replacement = sum(float(it.get("replacementValue") or 0) for it in items)
-        total_accessories_val = 0
-        total_rounds = 0
+        active_items = [it for it in items if it.get("status") not in ("Inactive", "Sold")]
+        inactive_items = [it for it in items if it.get("status") in ("Inactive", "Sold")]
+
+        total_active = len(active_items)
+        total_inactive = len(inactive_items)
+        total_all = len(items)
+
+        active_purchase = sum(float(it.get("purchasePrice") or 0) for it in active_items)
+        active_replacement = sum(float(it.get("replacementValue") or 0) for it in active_items)
+        active_accessories_val = 0
+        active_rounds = 0
 
         type_counts = {}
-        for it in items:
+        for it in active_items:
             t = it.get("type", "Other")
             type_counts[t] = type_counts.get(t, 0) + 1
-            total_rounds += int(it.get("roundCount") or 0)
+            active_rounds += int(it.get("roundCount") or 0)
             for acc in it.get("accessories", []):
-                total_accessories_val += float(acc.get("value") or 0)
+                active_accessories_val += float(acc.get("value") or 0)
 
         return {
-            "totalFirearms": total_items,
-            "totalPurchaseCost": round(total_purchase, 2),
-            "totalReplacementValue": round(total_replacement, 2),
-            "totalAccessoriesValue": round(total_accessories_val, 2),
-            "grandTotalInsuredValue": round(total_replacement + total_accessories_val, 2),
-            "totalRoundsTracked": total_rounds,
+            "totalFirearms": total_active,
+            "totalActiveFirearms": total_active,
+            "totalInactiveFirearms": total_inactive,
+            "totalAllFirearms": total_all,
+            "totalPurchaseCost": round(active_purchase, 2),
+            "totalReplacementValue": round(active_replacement, 2),
+            "totalAccessoriesValue": round(active_accessories_val, 2),
+            "grandTotalInsuredValue": round(active_replacement + active_accessories_val, 2),
+            "totalRoundsTracked": active_rounds,
             "typeCounts": type_counts
         }
 
@@ -906,6 +918,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 "serialNumber": body.get("serialNumber", "").strip(),
                 "location": body.get("location", "").strip(),
                 "status": body.get("status", "Active"),
+                "soldDate": body.get("soldDate", ""),
+                "soldPrice": float(body.get("soldPrice") or 0) if body.get("soldPrice") is not None else 0.0,
+                "soldTo": body.get("soldTo", "").strip(),
                 "purchaseDate": body.get("purchaseDate", ""),
                 "purchasePrice": float(body.get("purchasePrice") or 0),
                 "replacementValue": float(body.get("replacementValue") or 0),
@@ -1089,6 +1104,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 ccw["importantLinks"] = []
             if "qualifyingGuns" in body:
                 ccw["qualifyingGuns"] = body["qualifyingGuns"]
+            if "frontPhoto" in body:
+                ccw["frontPhoto"] = body["frontPhoto"]
+            if "backPhoto" in body:
+                ccw["backPhoto"] = body["backPhoto"]
+            if "permitHistory" in body:
+                ccw["permitHistory"] = body["permitHistory"]
 
             db["ccw"] = ccw
             save_db(db)
@@ -1124,23 +1145,20 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return
 
             now_iso = datetime.now(timezone.utc).isoformat() + "Z"
-            existing = items[idx]
+            for key in ["make", "model", "type", "caliber", "action", "barrelLength", "serialNumber", "location", "status", "purchaseDate", "notes", "soldDate", "soldTo"]:
+                if key in body:
+                    existing[key] = str(body[key]).strip() if body[key] is not None else ""
 
-            existing["make"] = body.get("make", existing.get("make", "")).strip()
-            existing["model"] = body.get("model", existing.get("model", "")).strip()
-            existing["type"] = body.get("type", existing.get("type", "Pistol"))
-            existing["caliber"] = body.get("caliber", existing.get("caliber", "")).strip()
-            existing["action"] = body.get("action", existing.get("action", "")).strip()
-            existing["barrelLength"] = body.get("barrelLength", existing.get("barrelLength", "")).strip()
-            existing["serialNumber"] = body.get("serialNumber", existing.get("serialNumber", "")).strip()
-            existing["location"] = body.get("location", existing.get("location", "")).strip()
-            existing["status"] = body.get("status", existing.get("status", "Active"))
-            existing["purchaseDate"] = body.get("purchaseDate", existing.get("purchaseDate", ""))
-            existing["purchasePrice"] = float(body.get("purchasePrice") if body.get("purchasePrice") is not None else existing.get("purchasePrice", 0))
-            existing["replacementValue"] = float(body.get("replacementValue") if body.get("replacementValue") is not None else existing.get("replacementValue", 0))
-            existing["roundCount"] = int(body.get("roundCount") if body.get("roundCount") is not None else existing.get("roundCount", 0))
-            existing["notes"] = body.get("notes", existing.get("notes", "")).strip()
-            existing["onCCW"] = bool(body.get("onCCW", existing.get("onCCW", False)))
+            if "purchasePrice" in body:
+                existing["purchasePrice"] = float(body["purchasePrice"] or 0)
+            if "replacementValue" in body:
+                existing["replacementValue"] = float(body["replacementValue"] or 0)
+            if "soldPrice" in body:
+                existing["soldPrice"] = float(body["soldPrice"] or 0)
+            if "roundCount" in body:
+                existing["roundCount"] = int(body["roundCount"] or 0)
+            if "onCCW" in body:
+                existing["onCCW"] = bool(body["onCCW"])
 
             if "images" in body:
                 existing["images"] = body["images"]
