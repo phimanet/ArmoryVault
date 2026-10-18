@@ -2164,6 +2164,9 @@
           <div style="text-align:right;">
             <div class="ccw-days-count" id="ccwDaysRemainingVal" style="color:#fbbf24;">--</div>
             <div class="ccw-days-label" id="ccwDaysRemainingLabel">Days Until Expiration</div>
+            <button type="button" class="btn btn-secondary" onclick="archiveCurrentPermitToHistory()" style="margin-top:6px; background:rgba(59,130,246,0.18); border-color:rgba(59,130,246,0.5); color:#93c5fd; font-weight:700; font-size:0.75rem; padding:4px 10px; display:inline-flex; align-items:center; gap:5px;" title="Move this current expiring license into your Prior Permits archive and clear fields for your new renewal license">
+              📦 Move to History &amp; Renew
+            </button>
           </div>
         </div>
 
@@ -2177,8 +2180,8 @@
               </h3>
               <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">Take photos of the front and back of your active permit card. Keeps high-res digital copies accessible anytime.</p>
             </div>
-            <button type="button" class="btn btn-secondary" onclick="archiveCurrentPermitToHistory()" title="Archive this current permit card to your multi-year historical archive" style="border-color:rgba(59,130,246,0.4); color:#93c5fd; font-size:0.78rem;">
-              📦 Archive to Prior Permits
+            <button type="button" class="btn btn-secondary" onclick="archiveCurrentPermitToHistory()" title="Move this current expiring California CCW license into your Prior Permits archive and enter your new license details" style="border-color:rgba(59,130,246,0.5); color:#93c5fd; font-size:0.78rem; font-weight:700;">
+              📦 Move Expiring License to History &amp; Enter New License
             </button>
           </div>
 
@@ -6648,8 +6651,8 @@
             </div>
             <div style="display:flex; gap:6px; align-items:center;">
               <span id="otherStatePortalLinkWrap">${safePortal && safePortal !== '#' ? `<a href="${escapeHtml(safePortal)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:4px 10px; font-size:0.74rem; color:#38bdf8;">🌐 State Portal ↗</a>` : ''}</span>
-              <button type="button" class="btn btn-secondary" onclick="archiveStatePermitToHistory(${idx})" style="padding:4px 10px; font-size:0.74rem; border-color:rgba(59,130,246,0.4); color:#93c5fd;" title="Archive this state permit to Prior Permits History">
-                📦 Archive to Prior
+              <button type="button" class="btn btn-secondary" onclick="archiveStatePermitToHistory(${idx})" style="padding:4px 10px; font-size:0.74rem; border-color:rgba(59,130,246,0.5); color:#93c5fd; font-weight:700;" title="Move this expiring state permit to Prior Permits history and clear fields to enter your new license">
+                📦 Move to History &amp; Enter New License
               </button>
               <button type="button" class="btn btn-ghost" onclick="deleteOtherStatePermit(${idx})" style="color:#fb7185; padding:4px 8px; font-size:0.75rem;" title="Remove this state permit">
                 🗑️ Remove State
@@ -6937,7 +6940,7 @@
       const expYear = sp.expirationDate ? sp.expirationDate.slice(0, 4) : new Date().getFullYear();
       const issueYear = sp.issueDate ? sp.issueDate.slice(0, 4) : (parseInt(expYear) - 5);
       const defaultPeriod = `${issueYear} - ${expYear}`;
-      const period = prompt(`Enter validity period for archived ${sp.state} permit:`, defaultPeriod);
+      const period = prompt(`Move current ${sp.state} CCW permit to Prior Permits History?\n\nEnter validity period for history archive:`, defaultPeriod);
       if (!period) return;
 
       currentCcwPermitHistory.unshift({
@@ -6953,9 +6956,22 @@
         notes: sp.notes || `Archived from ${sp.state} CCW permit on ${new Date().toLocaleDateString()}`,
         archivedAt: new Date().toISOString()
       });
+
+      // Clear active state permit fields so user can input new information for the renewed license
+      sp.permitNumber = '';
+      sp.issueDate = '';
+      sp.expirationDate = '';
+      sp.frontPhoto = '';
+      sp.backPhoto = '';
+      sp.renewalCompleted = false;
+      sp.status = 'Active';
+      sp.notes = '';
+
       updatePriorPermitsCompactBar();
+      renderOtherStatePermits();
+      toggleOtherStateSection(true);
       await saveCcwPhotosDirect();
-      showToast(`✅ ${sp.state} (${period}) archived to Prior Permits!`);
+      showToast(`✅ ${sp.state} (${period}) moved to History! You can now enter your new license info and card photos below.`);
     }
 
     // ----------------------------------------------------------------------
@@ -7338,40 +7354,124 @@
       container.appendChild(card);
     }
 
-    // 1-Click: Archive Current CCW Permit Card to Multi-Year History
+    // 1-Click: Move Expiring California CCW License to History & Enter New Renewal License
     async function archiveCurrentPermitToHistory() {
-      if (!currentCcwFrontPhoto && !currentCcwBackPhoto) {
-        if (!confirm('You have not uploaded front or back photos for your current permit yet. Do you still want to archive the current validity period?')) {
-          return;
-        }
+      const currentNum = (document.getElementById('ccwPermitNumber') && document.getElementById('ccwPermitNumber').value.trim()) || (ccwData && ccwData.permitNumber) || '';
+      const currentExp = (document.getElementById('ccwExpirationDate') && document.getElementById('ccwExpirationDate').value) || (ccwData && ccwData.expirationDate) || '';
+      const currentIssue = (document.getElementById('ccwIssueDate') && document.getElementById('ccwIssueDate').value) || (ccwData && ccwData.issueDate) || '';
+
+      if (!currentNum && !currentCcwFrontPhoto && !currentCcwBackPhoto && !currentExp) {
+        showToast('No active California permit details or photos to archive');
+        return;
       }
 
-      const expYear = ccwData && ccwData.expirationDate ? ccwData.expirationDate.slice(0, 4) : new Date().getFullYear();
-      const issueYear = ccwData && ccwData.issueDate ? ccwData.issueDate.slice(0, 4) : (parseInt(expYear) - 2);
+      const expYear = currentExp ? currentExp.slice(0, 4) : new Date().getFullYear();
+      const issueYear = currentIssue ? currentIssue.slice(0, 4) : (parseInt(expYear) - 2);
       const defaultPeriod = `${issueYear} - ${expYear}`;
 
-      const period = prompt('Enter validity period for this archived California permit:', defaultPeriod);
+      const period = prompt(`Move current California CCW license (${currentNum ? '#' + currentNum : defaultPeriod}) to Prior Permits History?\n\nEnter validity period for history archive:`, defaultPeriod);
       if (!period) return;
 
+      // 1. Create historical archive entry
       const newEntry = {
         id: 'hist-' + Date.now(),
         state: 'California',
         period: period.trim(),
-        permitNumber: (ccwData && ccwData.permitNumber) || '',
-        issueDate: (ccwData && ccwData.issueDate) || '',
-        expirationDate: (ccwData && ccwData.expirationDate) || '',
-        agency: (ccwData && ccwData.issuingAgency) || "San Diego County Sheriff's Department",
-        frontPhoto: currentCcwFrontPhoto,
-        backPhoto: currentCcwBackPhoto,
-        notes: `Archived from active California CCW permit card on ${new Date().toLocaleDateString()}`,
+        permitNumber: currentNum,
+        issueDate: currentIssue,
+        expirationDate: currentExp,
+        agency: (document.getElementById('ccwIssuingAgency') && document.getElementById('ccwIssuingAgency').value.trim()) || (ccwData && ccwData.issuingAgency) || "San Diego County Sheriff's Department",
+        frontPhoto: currentCcwFrontPhoto || '',
+        backPhoto: currentCcwBackPhoto || '',
+        notes: `Archived from California CCW license on ${new Date().toLocaleDateString()}`,
         archivedAt: new Date().toISOString()
       };
 
       currentCcwPermitHistory.unshift(newEntry);
       activePriorPermitId = newEntry.id;
-      renderCcwPermitHistory();
-      await saveCcwPhotosDirect();
-      showToast(`✅ ${period} permit archived to Prior Permits!`);
+
+      // 2. Clear active California permit fields so user can immediately input the new license info
+      currentCcwFrontPhoto = '';
+      currentCcwBackPhoto = '';
+
+      if (document.getElementById('ccwPermitNumber')) document.getElementById('ccwPermitNumber').value = '';
+      if (document.getElementById('ccwIssueDate')) document.getElementById('ccwIssueDate').value = '';
+      if (document.getElementById('ccwExpirationDate')) document.getElementById('ccwExpirationDate').value = '';
+      if (document.getElementById('ccwPermitStatus')) document.getElementById('ccwPermitStatus').value = 'Active';
+      if (document.getElementById('ccwLiveScanCompleted')) document.getElementById('ccwLiveScanCompleted').checked = false;
+      if (document.getElementById('ccwLiveScanDate')) document.getElementById('ccwLiveScanDate').value = '';
+      if (document.getElementById('ccwTrainingCompleted')) document.getElementById('ccwTrainingCompleted').checked = false;
+      if (document.getElementById('ccwTrainingDate')) document.getElementById('ccwTrainingDate').value = '';
+      if (document.getElementById('ccwSdsoUploadCompleted')) document.getElementById('ccwSdsoUploadCompleted').checked = false;
+      if (document.getElementById('ccwSdsoUploadDate')) document.getElementById('ccwSdsoUploadDate').value = '';
+      if (document.getElementById('ccwStopAlerts90Days')) document.getElementById('ccwStopAlerts90Days').checked = false;
+
+      updateStepCardStyle('stepCardLiveScan', false);
+      updateStepCardStyle('stepCardTraining', false);
+      updateStepCardStyle('stepCardSdsoUpload', false);
+
+      renderCcwPermitCards();
+      updatePriorPermitsCompactBar();
+
+      // Summary banner text
+      const numSummary = document.getElementById('ccwSummaryPermitNum');
+      if (numSummary) numSummary.textContent = 'Enter New Permit #';
+      const expSummary = document.getElementById('ccwSummaryExpDate');
+      if (expSummary) expSummary.textContent = 'Enter New Expiration Date';
+      const deadSummary = document.getElementById('ccwSummaryDeadline90');
+      if (deadSummary) deadSummary.textContent = 'Set Expiration Date';
+      const daysVal = document.getElementById('ccwDaysRemainingVal');
+      if (daysVal) {
+        daysVal.textContent = '--';
+        daysVal.style.color = '#94a3b8';
+      }
+      const daysLbl = document.getElementById('ccwDaysRemainingLabel');
+      if (daysLbl) daysLbl.textContent = 'Enter Renewal Date';
+
+      // 3. Persist cleared California permit + updated history to backend
+      collectNraFromDom();
+      try {
+        const res = await fetch('/api/ccw', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            permitNumber: '',
+            issueDate: '',
+            expirationDate: '',
+            status: 'Active',
+            liveScanCompleted: false,
+            liveScanDate: '',
+            trainingCompleted: false,
+            trainingDate: '',
+            sdsoUploadCompleted: false,
+            sdsoUploadDate: '',
+            stopAlerts90Days: false,
+            frontPhoto: '',
+            backPhoto: '',
+            permitHistory: currentCcwPermitHistory,
+            otherStatePermits: currentOtherStatePermits,
+            nraMembership: currentNraMembership
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.ccw) {
+          ccwData = data.ccw;
+          updateCcwHeaderBadge();
+        }
+      } catch (err) {
+        console.error('Failed to save archived California permit to backend:', err);
+      }
+
+      // 4. Scroll to and focus the new permit number input
+      const permitNumInput = document.getElementById('ccwPermitNumber');
+      if (permitNumInput) {
+        permitNumInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+          permitNumInput.focus();
+        }, 350);
+      }
+
+      showToast(`✅ California (${period}) moved to History! You can now enter your new license info and card photos below.`);
     }
 
     // Modal: Open Add / Edit Historical Permit Modal

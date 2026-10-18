@@ -112,3 +112,19 @@
 - **Git Deployment Pipeline**:
   - Committed and pushed to `phimanet/ArmoryVault` (`origin main`).
   - Pulled and verified live on production container host `http://192.168.72.10:8186`.
+
+## Multi-State CCW Permits, NRA Membership & Prior Permit History Archive (2026-10-17)
+- **Multi-State CCW Permits Tracking (Utah, Arizona, etc.)**:
+  - Added dedicated section supporting out-of-state CCW permits with state name, permit number, issue/expiration dates, 90-day alert tracking, and front/back card photo captures.
+  - Added client-side image compression (`compressImageFileToDataUrl`) reducing card photos to ~85–95 KB for instantaneous mobile syncing.
+- **NRA Membership Card & Photo Integration**:
+  - Added dedicated NRA membership section with member ID, membership tier (Life, Annual, etc.), expiration date, and card photo capture with instant preview.
+- **Collapsible Secondary Sections**:
+  - Collapsed Out-of-State Permits and NRA Membership by default behind sleek summary bars with count pills and status badges, keeping the main CCW modal clean and compact.
+- **Click-to-View Prior Permits History Modal**:
+  - Replaced vertical card stacking with a compact Prior Permits summary bar featuring quick pills and an interactive click-to-view history modal (`#priorPermitsHistoryModal`).
+- **Date Input Keystroke Bugfix**:
+  - Replaced disruptive full-container `innerHTML` re-renders on date change with targeted in-place text updates, preventing input destruction mid-keystroke when typing 4-digit years.
+- **1-Click "Move Expiring License to History & Enter New License" Workflow**:
+  - **Main California CCW**: Added `📦 Move to History & Renew` button in the expiration banner and above card previews. Prompts for history validity period, packages current permit into history, resets active California license inputs & photos in DOM and backend disk, and smoothly focuses `#ccwPermitNumber` for immediate entry of the new renewal license.
+  - **Out-of-State CCW Permits**: Added `📦 Move to History & Enter New License` button on each state permit card. Archives current license to history, clears active fields and photos, and keeps the section open for immediate entry of renewed permit details.
