@@ -2165,23 +2165,25 @@
             <div class="ccw-days-count" id="ccwDaysRemainingVal" style="color:#fbbf24;">--</div>
             <div class="ccw-days-label" id="ccwDaysRemainingLabel">Days Until Expiration</div>
           </div>
-        <!-- CCW Permit Card (Front & Back) & Multi-Year Nostalgia Archive -->
+        </div>
+
+        <!-- CCW Permit Card (Front & Back) -->
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
             <div>
               <h3 class="section-title" style="margin-bottom:2px;">
                 <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-                Current CCW Permit Card (Front & Back)
+                Current California CCW Permit Card (Front & Back)
               </h3>
               <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">Take photos of the front and back of your active permit card. Keeps high-res digital copies accessible anytime.</p>
             </div>
             <button type="button" class="btn btn-secondary" onclick="archiveCurrentPermitToHistory()" title="Archive this current permit card to your multi-year historical archive" style="border-color:rgba(59,130,246,0.4); color:#93c5fd; font-size:0.78rem;">
-              📦 Archive to History
+              📦 Archive to Prior Permits
             </button>
           </div>
 
           <!-- Front & Back Cards Display -->
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:14px; margin-bottom:18px;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:14px; margin-bottom:14px;">
             <!-- Front Card -->
             <div class="permit-card-box">
               <div class="permit-card-box-header">
@@ -2256,26 +2258,162 @@
               </div>
             </div>
           </div>
+
+          <!-- Compact Click-to-View Prior CCW Permits Nostalgia Bar (Does Not Stack Vertically) -->
+          <div style="margin-bottom:20px; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.25); border-radius:var(--radius-md); padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <span style="font-size:1.25rem;">🕰️</span>
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <strong style="font-size:0.9rem; color:#f8fafc;">Prior CCW Permits &amp; Nostalgia Archive</strong>
+                  <span class="badge-tag" id="priorPermitsCountBadge" style="background:rgba(56,189,248,0.2); color:#38bdf8; font-weight:700;">0 Saved</span>
+                </div>
+                <div style="font-size:0.74rem; color:var(--text-dim); margin-top:2px;" id="priorPermitsQuickPills">
+                  Click "View Prior Permits" to browse your historical permits by year without cluttering this page.
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button type="button" class="btn btn-secondary" onclick="openPriorPermitsViewerModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; font-weight:700; font-size:0.78rem;">
+                👁️ View Prior Permits
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal()" style="border-color:rgba(16,185,129,0.4); color:#34d399; font-size:0.78rem;">
+                + Add Prior Permit
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Multi-Year Nostalgia & Prior Permit History Archive Section -->
-        <div style="margin-bottom:20px; background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px;">
+        <!-- Out-of-State CCW Permits Section (Utah, Arizona, etc.) with Tabbed Selector -->
+        <div style="margin-bottom:22px; background:rgba(167,139,250,0.04); border:1px solid rgba(167,139,250,0.28); border-radius:var(--radius-md); padding:16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
             <div>
-              <h3 class="section-title" style="margin-bottom:2px;">
-                <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-                🕰️ Multi-Year CCW Permit Archive & Nostalgia History
+              <h3 class="section-title" style="margin-bottom:2px; color:#c4b5fd;">
+                <svg viewBox="0 0 24 24" style="fill:#a78bfa;"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
+                🗺️ Out-of-State CCW Permits (Utah, Arizona &amp; Reciprocity)
               </h3>
-              <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">Track your licensing history across the years. Preserve past permits, cards, and qualifications to see how your licenses looked over time.</p>
+              <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">
+                Manage your Utah, Arizona, and other out-of-state CCW permits with Front &amp; Back card photos and automated 90-day expiration email alerts.
+              </p>
             </div>
-            <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal()" style="border-color:rgba(16,185,129,0.4); color:#34d399; font-size:0.78rem;">
-              + Add Prior Year Permit
-            </button>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" onclick="quickAddStatePermit('Utah')" style="padding:4px 10px; font-size:0.74rem; border-color:rgba(167,139,250,0.4); color:#c4b5fd;">+ Utah</button>
+              <button type="button" class="btn btn-secondary" onclick="quickAddStatePermit('Arizona')" style="padding:4px 10px; font-size:0.74rem; border-color:rgba(167,139,250,0.4); color:#c4b5fd;">+ Arizona</button>
+              <button type="button" class="btn btn-secondary" onclick="quickAddStatePermit('Custom')" style="padding:4px 10px; font-size:0.74rem; border-color:rgba(16,185,129,0.4); color:#34d399;">+ Other State</button>
+            </div>
           </div>
 
-          <!-- History Timeline / Grid Container -->
-          <div id="ccwPermitHistoryContainer" style="display:flex; flex-direction:column; gap:12px;">
-            <!-- Populated via JS -->
+          <!-- State Selector Tabs Bar (Click a state tab to view/edit without stacking) -->
+          <div id="otherStateTabsBar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
+
+          <!-- Active Selected Out-of-State Permit Card Editor -->
+          <div id="otherStateActivePanel"></div>
+          <input type="file" id="statePermitCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleStatePermitPhotoFile(event)">
+          <input type="file" id="statePermitLibraryInput" accept="image/*" style="display:none;" onchange="handleStatePermitPhotoFile(event)">
+        </div>
+
+        <!-- NRA Membership & Credential Card Section -->
+        <div style="margin-bottom:22px; background:rgba(245,158,11,0.04); border:1px solid rgba(245,158,11,0.28); border-radius:var(--radius-md); padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h3 class="section-title" style="margin-bottom:2px; color:#fbbf24;">
+                <svg viewBox="0 0 24 24" style="fill:#f59e0b;"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+                🦅 NRA Membership &amp; Credential Card
+              </h3>
+              <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0;">
+                Store your NRA Member ID, membership tier, expiration date, and front/back photos of your NRA membership card.
+              </p>
+            </div>
+            <span class="badge-tag" id="nraStatusHeaderBadge" style="background:rgba(245,158,11,0.2); color:#fbbf24; font-weight:700;">NRA Member</span>
+          </div>
+
+          <div class="form-grid" style="margin-bottom:14px;">
+            <div class="form-group">
+              <label class="form-label">NRA Member ID #</label>
+              <input type="text" class="form-control" id="nraMemberId" placeholder="e.g. 194820419">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Membership Level</label>
+              <select class="form-control" id="nraMemberLevel">
+                <option value="Annual Member">Annual Member</option>
+                <option value="3-Year Member">3-Year Member</option>
+                <option value="5-Year Member">5-Year Member</option>
+                <option value="Life Member">Life Member</option>
+                <option value="Endowment Member">Endowment Member</option>
+                <option value="Patron Member">Patron Member</option>
+                <option value="Benefactor Member">Benefactor Member</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Join / Issue Date</label>
+              <input type="date" class="form-control" id="nraJoinDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expiration Date (Leave blank if Life)</label>
+              <input type="date" class="form-control" id="nraExpirationDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">NRA Notes / Instructor Cert #</label>
+              <input type="text" class="form-control" id="nraNotes" placeholder="Notes, RSO/Instructor credentials, insurance...">
+            </div>
+            <div class="form-group" style="justify-content:center;">
+              <label class="form-label">Expiration Reminder</label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:4px;">
+                <input type="checkbox" id="nraNotify90Days" checked style="width:16px; height:16px; accent-color:#f59e0b;">
+                <span style="font-size:0.8rem; font-weight:600; color:#fbbf24;">Notify 90 Days Before Expiration</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- NRA Card Front & Back Photos -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
+            <!-- NRA Front -->
+            <div class="permit-card-box">
+              <div class="permit-card-box-header">
+                <span style="font-weight:700; font-size:0.82rem; color:#fbbf24;">🦅 NRA Card (Front)</span>
+                <span class="badge-tag" id="nraFrontBadge" style="font-size:0.66rem;">No Photo</span>
+              </div>
+              <div class="permit-card-preview-wrap" style="height:145px;" onclick="openNraCardZoom('front')">
+                <img id="nraFrontImg" class="permit-card-img" style="display:none;" alt="NRA Card Front">
+                <div id="nraFrontPlaceholder" class="permit-card-placeholder">
+                  <span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">No NRA Front Photo</span>
+                  <span style="font-size:0.7rem; color:var(--text-dim);">Take photo or upload</span>
+                </div>
+              </div>
+              <input type="file" id="nraFrontCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleNraPhotoUpload(event, 'front')">
+              <input type="file" id="nraFrontLibraryInput" accept="image/*" style="display:none;" onchange="handleNraPhotoUpload(event, 'front')">
+              <div class="permit-card-box-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('nraFrontCameraInput').click()" style="padding:3px 8px; font-size:0.73rem;">📷 Camera</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('nraFrontLibraryInput').click()" style="padding:3px 8px; font-size:0.73rem;">📁 Library</button>
+                <button type="button" class="btn btn-secondary" id="nraFrontZoomBtn" onclick="openNraCardZoom('front')" style="display:none; padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
+                <button type="button" class="btn btn-secondary" id="nraFrontRotateBtn" onclick="rotateNraPhoto('front')" style="display:none; padding:3px 8px; font-size:0.73rem;">⟳ Rotate</button>
+                <button type="button" class="btn btn-ghost" id="nraFrontDeleteBtn" onclick="deleteNraPhoto('front')" style="display:none; color:#fb7185; padding:3px 6px; font-size:0.73rem;">✕</button>
+              </div>
+            </div>
+
+            <!-- NRA Back -->
+            <div class="permit-card-box">
+              <div class="permit-card-box-header">
+                <span style="font-weight:700; font-size:0.82rem; color:#fbbf24;">🦅 NRA Card (Back)</span>
+                <span class="badge-tag" id="nraBackBadge" style="font-size:0.66rem;">No Photo</span>
+              </div>
+              <div class="permit-card-preview-wrap" style="height:145px;" onclick="openNraCardZoom('back')">
+                <img id="nraBackImg" class="permit-card-img" style="display:none;" alt="NRA Card Back">
+                <div id="nraBackPlaceholder" class="permit-card-placeholder">
+                  <span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">No NRA Back Photo</span>
+                  <span style="font-size:0.7rem; color:var(--text-dim);">Take photo or upload</span>
+                </div>
+              </div>
+              <input type="file" id="nraBackCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleNraPhotoUpload(event, 'back')">
+              <input type="file" id="nraBackLibraryInput" accept="image/*" style="display:none;" onchange="handleNraPhotoUpload(event, 'back')">
+              <div class="permit-card-box-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('nraBackCameraInput').click()" style="padding:3px 8px; font-size:0.73rem;">📷 Camera</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('nraBackLibraryInput').click()" style="padding:3px 8px; font-size:0.73rem;">📁 Library</button>
+                <button type="button" class="btn btn-secondary" id="nraBackZoomBtn" onclick="openNraCardZoom('back')" style="display:none; padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
+                <button type="button" class="btn btn-secondary" id="nraBackRotateBtn" onclick="rotateNraPhoto('back')" style="display:none; padding:3px 8px; font-size:0.73rem;">⟳ Rotate</button>
+                <button type="button" class="btn btn-ghost" id="nraBackDeleteBtn" onclick="deleteNraPhoto('back')" style="display:none; color:#fb7185; padding:3px 6px; font-size:0.73rem;">✕</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2786,6 +2924,10 @@
           <input type="hidden" id="historicalPermitId">
           <div class="form-grid">
             <div class="form-group">
+              <label class="form-label">State / Jurisdiction</label>
+              <input type="text" class="form-control" id="historicalState" value="California" placeholder="e.g. California, Utah, Arizona">
+            </div>
+            <div class="form-group">
               <label class="form-label">Validity Period / Years *</label>
               <input type="text" class="form-control" id="historicalPeriod" placeholder="e.g. 2022 - 2024 or 2022" required>
             </div>
@@ -2794,16 +2936,16 @@
               <input type="text" class="form-control" id="historicalPermitNumber" placeholder="e.g. CCW-2022-0891">
             </div>
             <div class="form-group">
+              <label class="form-label">Issuing Agency</label>
+              <input type="text" class="form-control" id="historicalAgency" value="San Diego County Sheriff's Department">
+            </div>
+            <div class="form-group">
               <label class="form-label">Issue Date</label>
               <input type="date" class="form-control" id="historicalIssueDate">
             </div>
             <div class="form-group">
               <label class="form-label">Expiration Date</label>
               <input type="date" class="form-control" id="historicalExpDate">
-            </div>
-            <div class="form-group full">
-              <label class="form-label">Issuing Agency</label>
-              <input type="text" class="form-control" id="historicalAgency" value="San Diego County Sheriff's Department">
             </div>
 
             <!-- Front Photo Upload -->
@@ -2856,6 +2998,35 @@
     </div>
   </div>
 
+  <!-- ================= PRIOR CCW PERMITS ARCHIVE VIEWER MODAL (CLICK TO VIEW) ================= -->
+  <div class="modal-overlay" id="priorPermitsViewerModal" style="z-index: 10055;">
+    <div class="modal-content" style="max-width: 780px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.3rem;">🕰️</span>
+          <h2 class="modal-title">Prior CCW Permits &amp; Multi-Year Nostalgia Archive</h2>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal()" style="border-color:rgba(16,185,129,0.4); color:#34d399; font-size:0.78rem;">
+            + Add Prior Permit
+          </button>
+          <button class="modal-close" onclick="closePriorPermitsViewerModal()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0; margin-bottom:12px;">
+          Select any archived year/permit below to inspect how your permit card looked at that time, or click Front/Back to zoom full-screen.
+        </p>
+        <!-- Year / Permit Selector Tabs -->
+        <div id="priorPermitsSelectorTabs" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;"></div>
+        <!-- Active Prior Permit Display -->
+        <div id="ccwPermitHistoryContainer"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div class="toast" id="toast">
     <svg viewBox="0 0 24 24" style="width:18px; height:18px; fill:#34d399;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -2870,6 +3041,24 @@
     let maskSerials = true;
     let selectedFirearm = null;
     let currentDetailImageIdx = 0;
+
+    // Security & HTML/URL Sanitization Helpers
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function sanitizeUrl(url) {
+      if (!url) return '';
+      const trimmed = String(url).trim();
+      if (/^(javascript|data|vbscript):/i.test(trimmed)) return '#';
+      return trimmed;
+    }
 
     // Format numbers with commas: e.g. 12500 -> "12,500.00"
     function formatCurrency(val) {
@@ -3307,10 +3496,11 @@
       } else {
         sources.forEach(s => {
           const tr = document.createElement('tr');
-          const tagsHtml = (s.tags || []).map(t => `<span class="tag-pill">${t}</span>`).join('');
-          const linkHtml = s.url ? `<a href="${s.url}" target="_blank" rel="noopener" class="btn btn-secondary" style="padding:3px 8px; font-size:0.75rem;">Visit Store ↗</a>` : '-';
+          const tagsHtml = (s.tags || []).map(t => `<span class="tag-pill">${escapeHtml(t)}</span>`).join('');
+          const safeUrl = sanitizeUrl(s.url);
+          const linkHtml = safeUrl && safeUrl !== '#' ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:3px 8px; font-size:0.75rem;">Visit Store ↗</a>` : '-';
           tr.innerHTML = `
-            <td><strong>${s.name || '-'}</strong></td>
+            <td><strong>${escapeHtml(s.name || '-')}</strong></td>
             <td style="color:#34d399; font-weight:600;">${formatCurrency(s.price || 0)}</td>
             <td>${tagsHtml || '-'}</td>
             <td>${linkHtml}</td>
@@ -5712,8 +5902,67 @@
       currentCcwFrontPhoto = ccwData.frontPhoto || '';
       currentCcwBackPhoto = ccwData.backPhoto || '';
       currentCcwPermitHistory = Array.isArray(ccwData.permitHistory) ? [...ccwData.permitHistory] : [];
+
+      // Load Out-of-State CCW Permits (Utah, Arizona, etc.)
+      const defaultStatePermits = [
+        {
+          id: 'state-utah',
+          state: 'Utah',
+          permitName: 'Utah Non-Resident Concealed Firearm Permit (CFP)',
+          issuingAgency: 'Utah Bureau of Criminal Identification (BCI)',
+          permitNumber: '',
+          status: 'Active',
+          issueDate: '',
+          expirationDate: '',
+          notify90Days: true,
+          stopAlerts90Days: false,
+          renewalCompleted: false,
+          portalUrl: 'https://bci.utah.gov/concealed-firearm/',
+          frontPhoto: '',
+          backPhoto: '',
+          notes: ''
+        },
+        {
+          id: 'state-arizona',
+          state: 'Arizona',
+          permitName: 'Arizona Concealed Weapons Permit (CWP)',
+          issuingAgency: 'Arizona Dept. of Public Safety (AZ DPS)',
+          permitNumber: '',
+          status: 'Active',
+          issueDate: '',
+          expirationDate: '',
+          notify90Days: true,
+          stopAlerts90Days: false,
+          renewalCompleted: false,
+          portalUrl: 'https://www.azdps.gov/services/public/cwp',
+          frontPhoto: '',
+          backPhoto: '',
+          notes: ''
+        }
+      ];
+      currentOtherStatePermits = (Array.isArray(ccwData.otherStatePermits) && ccwData.otherStatePermits.length > 0)
+        ? JSON.parse(JSON.stringify(ccwData.otherStatePermits))
+        : JSON.parse(JSON.stringify(defaultStatePermits));
+      if (activeOtherStateIdx >= currentOtherStatePermits.length) activeOtherStateIdx = 0;
+
+      // Load NRA Membership
+      const nra = ccwData.nraMembership || {};
+      currentNraMembership = {
+        memberId: nra.memberId || '',
+        memberLevel: nra.memberLevel || 'Annual Member',
+        status: nra.status || 'Active',
+        joinDate: nra.joinDate || '',
+        expirationDate: nra.expirationDate || '',
+        notify90Days: nra.notify90Days !== undefined ? Boolean(nra.notify90Days) : true,
+        frontPhoto: nra.frontPhoto || '',
+        backPhoto: nra.backPhoto || '',
+        notes: nra.notes || ''
+      };
+
       renderCcwPermitCards();
-      renderCcwPermitHistory();
+      updatePriorPermitsCompactBar();
+      renderOtherStatePermits();
+      populateNraFields();
 
       document.getElementById('ccwModal').classList.add('active');
     }
@@ -5796,12 +6045,12 @@
       ccwGuns.forEach(f => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${f.make} ${f.model}</strong></td>
-          <td><span class="tag-pill" style="color:#93c5fd; border-color:rgba(59,130,246,0.3);">${f.caliber || '-'}</span></td>
-          <td><code>${formatSerial(f.serialNumber)}</code></td>
+          <td><strong>${escapeHtml(f.make)} ${escapeHtml(f.model)}</strong></td>
+          <td><span class="tag-pill" style="color:#93c5fd; border-color:rgba(59,130,246,0.3);">${escapeHtml(f.caliber || '-')}</span></td>
+          <td><code>${escapeHtml(formatSerial(f.serialNumber))}</code></td>
           <td><span style="color:#34d399; font-weight:600;">${formatNumber(f.roundCount || 0)} Rds</span></td>
           <td>
-            <button type="button" class="btn btn-secondary" onclick="toggleCcwFirearmPermit('${f.id}', false)" style="padding:2px 8px; font-size:0.72rem; color:#fb7185;">
+            <button type="button" class="btn btn-secondary" onclick="toggleCcwFirearmPermit('${escapeHtml(f.id)}', false)" style="padding:2px 8px; font-size:0.72rem; color:#fb7185;">
               Remove Tag
             </button>
           </td>
@@ -5849,13 +6098,14 @@
       formCcwLinks.forEach((item, idx) => {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; gap:8px; align-items:center; background:var(--bg-card); padding:8px 10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); flex-wrap:wrap;';
-        const hasUrl = item.url && item.url.trim().length > 0;
+        const safeUrl = sanitizeUrl(item.url);
+        const hasUrl = safeUrl && safeUrl !== '#';
         row.innerHTML = `
-          <input type="text" class="form-control" placeholder="Link Title / Description (e.g. SDSO CCW Pro Portal)" value="${item.title || ''}" onchange="formCcwLinks[${idx}].title = this.value" style="flex:2; min-width:180px;">
-          <input type="text" class="form-control" placeholder="Category (Sheriff, LiveScan, Training)" value="${item.category || ''}" onchange="formCcwLinks[${idx}].category = this.value" style="flex:1; min-width:120px;">
-          <input type="url" class="form-control" placeholder="https://..." value="${item.url || ''}" onchange="formCcwLinks[${idx}].url = this.value" style="flex:2.5; min-width:200px;">
+          <input type="text" class="form-control" placeholder="Link Title / Description (e.g. SDSO CCW Pro Portal)" value="${escapeHtml(item.title || '')}" onchange="formCcwLinks[${idx}].title = this.value" style="flex:2; min-width:180px;">
+          <input type="text" class="form-control" placeholder="Category (Sheriff, LiveScan, Training)" value="${escapeHtml(item.category || '')}" onchange="formCcwLinks[${idx}].category = this.value" style="flex:1; min-width:120px;">
+          <input type="url" class="form-control" placeholder="https://..." value="${escapeHtml(item.url || '')}" onchange="formCcwLinks[${idx}].url = this.value" style="flex:2.5; min-width:200px;">
           <div style="display:flex; gap:4px; align-items:center;">
-            ${hasUrl ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; color:#38bdf8;" title="Open link in new tab">Visit ↗</a>` : ''}
+            ${hasUrl ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:6px 10px; font-size:0.75rem; color:#38bdf8;" title="Open link in new tab">Visit ↗</a>` : ''}
             <button type="button" class="btn btn-ghost" onclick="removeCcwLink(${idx})" style="color:#fb7185; padding:6px 8px;" title="Delete link">✕</button>
           </div>
         `;
@@ -5873,11 +6123,26 @@
       renderCcwLinks();
     }
 
+    function collectNraFromDom() {
+      const idEl = document.getElementById('nraMemberId');
+      if (idEl) {
+        currentNraMembership.memberId = idEl.value.trim();
+        currentNraMembership.memberLevel = document.getElementById('nraMemberLevel').value;
+        currentNraMembership.joinDate = document.getElementById('nraJoinDate').value;
+        currentNraMembership.expirationDate = document.getElementById('nraExpirationDate').value;
+        currentNraMembership.notes = document.getElementById('nraNotes').value.trim();
+        currentNraMembership.notify90Days = document.getElementById('nraNotify90Days').checked;
+      }
+      return currentNraMembership;
+    }
+
     // Save CCW Settings & Checklist to API
     async function saveCcwSettings() {
       const saveBtn = document.getElementById('saveCcwBtn');
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving...';
+
+      collectNraFromDom();
 
       const payload = {
         permitNumber: document.getElementById('ccwPermitNumber').value.trim(),
@@ -5912,10 +6177,12 @@
         // Important Links
         importantLinks: formCcwLinks.filter(l => (l.title && l.title.trim()) || (l.url && l.url.trim())),
 
-        // CCW Card Photos & Nostalgia Archive
+        // CCW Card Photos, Out-of-State Permits, NRA & Nostalgia Archive
         frontPhoto: currentCcwFrontPhoto,
         backPhoto: currentCcwBackPhoto,
-        permitHistory: currentCcwPermitHistory
+        permitHistory: currentCcwPermitHistory,
+        otherStatePermits: currentOtherStatePermits,
+        nraMembership: currentNraMembership
       };
 
       try {
@@ -5928,7 +6195,7 @@
         if (data.success) {
           ccwData = data.ccw;
           updateCcwHeaderBadge();
-          showToast('CCW Permit & Checklist settings saved');
+          showToast('CCW Permits, Out-of-State & NRA settings saved');
           closeCcwModal();
         } else {
           showToast('Failed to save CCW settings');
@@ -5970,13 +6237,53 @@
     }
 
     // ----------------------------------------------------------------------
-    // CCW Permit Front & Back Card Photos & Multi-Year Nostalgia Archive
+    // CCW Permit Front & Back Card Photos, Out-of-State, NRA & Prior Archive
     // ----------------------------------------------------------------------
     let currentCcwFrontPhoto = '';
     let currentCcwBackPhoto = '';
     let currentCcwPermitHistory = [];
+    let currentOtherStatePermits = [];
+    let activeOtherStateIdx = 0;
+    let pendingStatePhotoUploadSide = 'front';
+    let currentNraMembership = {
+      memberId: '',
+      memberLevel: 'Annual Member',
+      status: 'Active',
+      joinDate: '',
+      expirationDate: '',
+      notify90Days: true,
+      frontPhoto: '',
+      backPhoto: '',
+      notes: ''
+    };
     let histFrontPhotoTemp = '';
     let histBackPhotoTemp = '';
+    let activePriorPermitId = 'ALL';
+
+    function calcDaysUntil(dateStr) {
+      if (!dateStr) return null;
+      try {
+        const expD = new Date(dateStr + 'T00:00:00');
+        if (isNaN(expD.getTime())) return null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return Math.round((expD - today) / (1000 * 60 * 60 * 24));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function calc90DayDeadlineStr(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const expD = new Date(dateStr + 'T00:00:00');
+        if (isNaN(expD.getTime())) return '';
+        expD.setDate(expD.getDate() - 90);
+        return expD.toISOString().split('T')[0];
+      } catch (e) {
+        return '';
+      }
+    }
 
     // Render Current CCW Front and Back Card Preview
     function renderCcwPermitCards() {
@@ -6117,15 +6424,22 @@
 
     async function saveCcwPhotosDirect() {
       try {
-        await fetch('/api/ccw', {
+        collectNraFromDom();
+        const res = await fetch('/api/ccw', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             frontPhoto: currentCcwFrontPhoto,
             backPhoto: currentCcwBackPhoto,
-            permitHistory: currentCcwPermitHistory
+            permitHistory: currentCcwPermitHistory,
+            otherStatePermits: currentOtherStatePermits,
+            nraMembership: currentNraMembership
           })
         });
+        const data = await res.json();
+        if (data.success) {
+          ccwData = data.ccw;
+        }
       } catch (e) {
         console.error('Failed to auto-save CCW photos:', e);
       }
@@ -6134,7 +6448,536 @@
     function openCcwCardZoom(side) {
       const url = side === 'front' ? currentCcwFrontPhoto : currentCcwBackPhoto;
       if (!url) return;
-      openPhotoZoomDirect(url, `CCW Permit Card - ${side === 'front' ? 'Front' : 'Back'}`);
+      openPhotoZoomDirect(url, `California CCW Permit Card - ${side === 'front' ? 'Front' : 'Back'}`);
+    }
+
+    // ----------------------------------------------------------------------
+    // Out-of-State CCW Permits (Utah, Arizona, & Custom States)
+    // ----------------------------------------------------------------------
+    function renderOtherStatePermits() {
+      const tabsBar = document.getElementById('otherStateTabsBar');
+      const panel = document.getElementById('otherStateActivePanel');
+      if (!tabsBar || !panel) return;
+
+      tabsBar.innerHTML = '';
+      panel.innerHTML = '';
+
+      if (!currentOtherStatePermits || currentOtherStatePermits.length === 0) {
+        panel.innerHTML = `
+          <div style="text-align:center; padding:18px; background:rgba(0,0,0,0.2); border:1px dashed var(--border-color); border-radius:var(--radius-sm); color:var(--text-muted); font-size:0.82rem;">
+            No Out-of-State CCW permits added yet. Click <strong>+ Utah</strong>, <strong>+ Arizona</strong>, or <strong>+ Other State</strong> above to add one.
+          </div>
+        `;
+        return;
+      }
+
+      if (activeOtherStateIdx >= currentOtherStatePermits.length) activeOtherStateIdx = 0;
+
+      // Render Clickable State Tabs
+      currentOtherStatePermits.forEach((sp, idx) => {
+        const isActive = idx === activeOtherStateIdx;
+        const days = calcDaysUntil(sp.expirationDate);
+        let badgeTxt = 'Set Exp';
+        let badgeColor = '#94a3b8';
+        let badgeBg = 'rgba(148,163,184,0.15)';
+        if (days !== null) {
+          if (days < 0) {
+            badgeTxt = `Expired (${Math.abs(days)}d)`;
+            badgeColor = '#fb7185';
+            badgeBg = 'rgba(244,63,94,0.2)';
+          } else if (days <= 90) {
+            badgeTxt = `⚠️ ${days}d left`;
+            badgeColor = '#fbbf24';
+            badgeBg = 'rgba(245,158,11,0.22)';
+          } else {
+            badgeTxt = `${days}d`;
+            badgeColor = '#34d399';
+            badgeBg = 'rgba(16,185,129,0.2)';
+          }
+        }
+        const stIcon = (sp.state || '').toLowerCase().includes('utah') ? '🏔️' : ((sp.state || '').toLowerCase().includes('arizona') ? '🌵' : '🗺️');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn ' + (isActive ? 'btn-primary' : 'btn-secondary');
+        btn.style.cssText = isActive
+          ? 'background:rgba(139,92,246,0.28); border-color:#a78bfa; color:#fff; font-weight:700; padding:6px 12px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px;'
+          : 'padding:6px 12px; font-size:0.8rem; display:inline-flex; align-items:center; gap:6px; opacity:0.85;';
+        btn.onclick = () => {
+          activeOtherStateIdx = idx;
+          renderOtherStatePermits();
+        };
+        btn.innerHTML = `
+          <span>${stIcon} ${escapeHtml(sp.state || 'State')} CCW</span>
+          <span style="background:${badgeBg}; color:${badgeColor}; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700;">${badgeTxt}</span>
+        `;
+        tabsBar.appendChild(btn);
+      });
+
+      // Render Selected State Permit Card
+      const sp = currentOtherStatePermits[activeOtherStateIdx];
+      const idx = activeOtherStateIdx;
+      const days = calcDaysUntil(sp.expirationDate);
+      const dead90 = calc90DayDeadlineStr(sp.expirationDate);
+      const dead90Display = dead90 ? formatDateUS(dead90) : 'Set Expiration Date';
+      const daysDisplay = days !== null ? (days < 0 ? `${Math.abs(days)} Days Overdue` : `${days} Days Remaining`) : 'Set Expiration Date';
+      const daysColor = days !== null ? (days < 0 ? '#fb7185' : (days <= 90 ? '#fbbf24' : '#34d399')) : 'var(--text-muted)';
+      const safePortal = sanitizeUrl(sp.portalUrl);
+
+      panel.innerHTML = `
+        <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(167,139,250,0.3); border-radius:var(--radius-sm); padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.07); padding-bottom:10px;">
+            <div>
+              <div style="font-size:1rem; font-weight:800; color:#f8fafc;">${escapeHtml(sp.state || 'Out-of-State')} CCW Permit — ${escapeHtml(sp.permitName || 'Concealed Carry Permit')}</div>
+              <div style="font-size:0.76rem; color:var(--text-muted); margin-top:2px;">
+                ⏳ Countdown: <strong style="color:${daysColor};">${daysDisplay}</strong> &bull;
+                📅 90-Day Renewal Notice Date: <strong style="color:#c4b5fd;">${dead90Display}</strong>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              ${safePortal && safePortal !== '#' ? `<a href="${escapeHtml(safePortal)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding:4px 10px; font-size:0.74rem; color:#38bdf8;">🌐 State Portal ↗</a>` : ''}
+              <button type="button" class="btn btn-secondary" onclick="archiveStatePermitToHistory(${idx})" style="padding:4px 10px; font-size:0.74rem; border-color:rgba(59,130,246,0.4); color:#93c5fd;" title="Archive this state permit to Prior Permits History">
+                📦 Archive to Prior
+              </button>
+              <button type="button" class="btn btn-ghost" onclick="deleteOtherStatePermit(${idx})" style="color:#fb7185; padding:4px 8px; font-size:0.75rem;" title="Remove this state permit">
+                🗑️ Remove State
+              </button>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-bottom:12px;">
+            <div class="form-group">
+              <label class="form-label">State</label>
+              <input type="text" class="form-control" value="${escapeHtml(sp.state || '')}" onchange="updateStatePermitField(${idx}, 'state', this.value)" placeholder="e.g. Utah, Arizona, Florida">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Permit Number</label>
+              <input type="text" class="form-control" value="${escapeHtml(sp.permitNumber || '')}" onchange="updateStatePermitField(${idx}, 'permitNumber', this.value)" placeholder="Permit / License #">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Issuing Agency</label>
+              <input type="text" class="form-control" value="${escapeHtml(sp.issuingAgency || '')}" onchange="updateStatePermitField(${idx}, 'issuingAgency', this.value)" placeholder="e.g. Utah BCI, AZ DPS">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-control" onchange="updateStatePermitField(${idx}, 'status', this.value)">
+                <option value="Active" ${sp.status === 'Active' ? 'selected' : ''}>Active</option>
+                <option value="Renewal Pending" ${sp.status === 'Renewal Pending' ? 'selected' : ''}>Renewal Pending</option>
+                <option value="Expired" ${sp.status === 'Expired' ? 'selected' : ''}>Expired</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Issue Date</label>
+              <input type="date" class="form-control" value="${escapeHtml(sp.issueDate || '')}" onchange="updateStatePermitField(${idx}, 'issueDate', this.value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="color:#c4b5fd; font-weight:700;">Expiration Date (Triggers 90-Day Alert)</label>
+              <input type="date" class="form-control" value="${escapeHtml(sp.expirationDate || '')}" onchange="updateStatePermitField(${idx}, 'expirationDate', this.value)" style="border-color:rgba(167,139,250,0.5);">
+            </div>
+            <div class="form-group">
+              <label class="form-label">State Renewal Portal URL</label>
+              <input type="url" class="form-control" value="${escapeHtml(sp.portalUrl || '')}" onchange="updateStatePermitField(${idx}, 'portalUrl', this.value)" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <input type="text" class="form-control" value="${escapeHtml(sp.notes || '')}" onchange="updateStatePermitField(${idx}, 'notes', this.value)" placeholder="Reciprocity notes, renewal fee, instructor...">
+            </div>
+          </div>
+
+          <!-- 90-Day Notification Bar for this State Permit -->
+          <div style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.28); border-radius:6px; padding:8px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.8rem; font-weight:700; color:#c4b5fd;">
+              <input type="checkbox" ${sp.notify90Days !== false ? 'checked' : ''} onchange="updateStatePermitField(${idx}, 'notify90Days', this.checked)" style="width:16px; height:16px; accent-color:#8b5cf6;">
+              <span>🔔 Notify me by email 90 days before ${escapeHtml(sp.state || 'this')} permit expires</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.78rem; font-weight:700; color:#34d399;">
+              <input type="checkbox" ${sp.renewalCompleted ? 'checked' : ''} onchange="updateStatePermitField(${idx}, 'renewalCompleted', this.checked)" style="width:15px; height:15px; accent-color:#10b981;">
+              <span>✅ Renewal Completed (Stop 90-Day Alerts)</span>
+            </label>
+          </div>
+
+          <!-- Front & Back Photos for this State Permit -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:12px;">
+            <!-- State Front -->
+            <div class="permit-card-box">
+              <div class="permit-card-box-header">
+                <span style="font-weight:700; font-size:0.82rem; color:#c4b5fd;">🪪 ${escapeHtml(sp.state)} Permit (Front)</span>
+                <span class="badge-tag" style="font-size:0.66rem; background:${sp.frontPhoto ? 'rgba(16,185,129,0.2)' : 'rgba(148,163,184,0.15)'}; color:${sp.frontPhoto ? '#34d399' : '#94a3b8'};">${sp.frontPhoto ? 'Photo On File' : 'No Photo'}</span>
+              </div>
+              <div class="permit-card-preview-wrap" style="height:145px;" onclick="${sp.frontPhoto ? `openPhotoZoomDirect('${escapeHtml(sp.frontPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Front')` : ''}">
+                ${sp.frontPhoto
+                  ? `<img src="${escapeHtml(sp.frontPhoto)}" class="permit-card-img" style="display:block;" alt="${escapeHtml(sp.state)} Front">`
+                  : `<div class="permit-card-placeholder"><span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">No Front Photo</span><span style="font-size:0.7rem; color:var(--text-dim);">Take photo or upload</span></div>`
+                }
+              </div>
+              <div class="permit-card-box-actions">
+                <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('front', 'camera')" style="padding:3px 8px; font-size:0.73rem;">📷 Camera</button>
+                <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('front', 'library')" style="padding:3px 8px; font-size:0.73rem;">📁 Library</button>
+                ${sp.frontPhoto ? `
+                  <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(sp.frontPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Front')" style="padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
+                  <button type="button" class="btn btn-secondary" onclick="rotateStatePermitPhoto(${idx}, 'front')" style="padding:3px 8px; font-size:0.73rem;">⟳ Rotate</button>
+                  <button type="button" class="btn btn-ghost" onclick="deleteStatePermitPhoto(${idx}, 'front')" style="color:#fb7185; padding:3px 6px; font-size:0.73rem;">✕</button>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- State Back -->
+            <div class="permit-card-box">
+              <div class="permit-card-box-header">
+                <span style="font-weight:700; font-size:0.82rem; color:#c4b5fd;">🪪 ${escapeHtml(sp.state)} Permit (Back)</span>
+                <span class="badge-tag" style="font-size:0.66rem; background:${sp.backPhoto ? 'rgba(16,185,129,0.2)' : 'rgba(148,163,184,0.15)'}; color:${sp.backPhoto ? '#34d399' : '#94a3b8'};">${sp.backPhoto ? 'Photo On File' : 'No Photo'}</span>
+              </div>
+              <div class="permit-card-preview-wrap" style="height:145px;" onclick="${sp.backPhoto ? `openPhotoZoomDirect('${escapeHtml(sp.backPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Back')` : ''}">
+                ${sp.backPhoto
+                  ? `<img src="${escapeHtml(sp.backPhoto)}" class="permit-card-img" style="display:block;" alt="${escapeHtml(sp.state)} Back">`
+                  : `<div class="permit-card-placeholder"><span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">No Back Photo</span><span style="font-size:0.7rem; color:var(--text-dim);">Take photo or upload</span></div>`
+                }
+              </div>
+              <div class="permit-card-box-actions">
+                <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('back', 'camera')" style="padding:3px 8px; font-size:0.73rem;">📷 Camera</button>
+                <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('back', 'library')" style="padding:3px 8px; font-size:0.73rem;">📁 Library</button>
+                ${sp.backPhoto ? `
+                  <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(sp.backPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Back')" style="padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
+                  <button type="button" class="btn btn-secondary" onclick="rotateStatePermitPhoto(${idx}, 'back')" style="padding:3px 8px; font-size:0.73rem;">⟳ Rotate</button>
+                  <button type="button" class="btn btn-ghost" onclick="deleteStatePermitPhoto(${idx}, 'back')" style="color:#fb7185; padding:3px 6px; font-size:0.73rem;">✕</button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateStatePermitField(idx, field, value) {
+      if (!currentOtherStatePermits[idx]) return;
+      currentOtherStatePermits[idx][field] = value;
+      renderOtherStatePermits();
+      saveCcwPhotosDirect();
+    }
+
+    function quickAddStatePermit(preset) {
+      let stateName = preset;
+      let permitName = 'Concealed Carry Weapon Permit';
+      let agency = '';
+      let portal = '';
+
+      if (preset === 'Utah') {
+        const existingIdx = currentOtherStatePermits.findIndex(p => (p.state || '').toLowerCase() === 'utah');
+        if (existingIdx !== -1) {
+          activeOtherStateIdx = existingIdx;
+          renderOtherStatePermits();
+          showToast('Switched to Utah CCW tab');
+          return;
+        }
+        permitName = 'Utah Non-Resident Concealed Firearm Permit (CFP)';
+        agency = 'Utah Bureau of Criminal Identification (BCI)';
+        portal = 'https://bci.utah.gov/concealed-firearm/';
+      } else if (preset === 'Arizona') {
+        const existingIdx = currentOtherStatePermits.findIndex(p => (p.state || '').toLowerCase() === 'arizona');
+        if (existingIdx !== -1) {
+          activeOtherStateIdx = existingIdx;
+          renderOtherStatePermits();
+          showToast('Switched to Arizona CCW tab');
+          return;
+        }
+        permitName = 'Arizona Concealed Weapons Permit (CWP)';
+        agency = 'Arizona Dept. of Public Safety (AZ DPS)';
+        portal = 'https://www.azdps.gov/services/public/cwp';
+      } else {
+        const input = prompt('Enter State Name for new CCW Permit (e.g. Nevada, Florida, Oregon, Texas):', '');
+        if (!input || !input.trim()) return;
+        stateName = input.trim();
+        permitName = `${stateName} Concealed Carry Permit`;
+        agency = `${stateName} Department of Public Safety`;
+      }
+
+      currentOtherStatePermits.push({
+        id: 'state-' + Date.now(),
+        state: stateName,
+        permitName: permitName,
+        issuingAgency: agency,
+        permitNumber: '',
+        status: 'Active',
+        issueDate: '',
+        expirationDate: '',
+        notify90Days: true,
+        stopAlerts90Days: false,
+        renewalCompleted: false,
+        portalUrl: portal,
+        frontPhoto: '',
+        backPhoto: '',
+        notes: ''
+      });
+      activeOtherStateIdx = currentOtherStatePermits.length - 1;
+      renderOtherStatePermits();
+      saveCcwPhotosDirect();
+      showToast(`Added ${stateName} CCW Permit`);
+    }
+
+    function deleteOtherStatePermit(idx) {
+      const sp = currentOtherStatePermits[idx];
+      if (!sp) return;
+      if (!confirm(`Remove ${sp.state || 'this'} CCW permit from your Out-of-State list?`)) return;
+      currentOtherStatePermits.splice(idx, 1);
+      if (activeOtherStateIdx >= currentOtherStatePermits.length) {
+        activeOtherStateIdx = Math.max(0, currentOtherStatePermits.length - 1);
+      }
+      renderOtherStatePermits();
+      saveCcwPhotosDirect();
+      showToast('State permit removed');
+    }
+
+    function triggerStatePermitPhotoUpload(side, sourceType) {
+      pendingStatePhotoUploadSide = side;
+      if (sourceType === 'camera') {
+        document.getElementById('statePermitCameraInput').click();
+      } else {
+        document.getElementById('statePermitLibraryInput').click();
+      }
+    }
+
+    async function handleStatePermitPhotoFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file || !currentOtherStatePermits[activeOtherStateIdx]) return;
+      const sp = currentOtherStatePermits[activeOtherStateIdx];
+      const side = pendingStatePhotoUploadSide;
+
+      showToast(`Optimizing & uploading ${sp.state} ${side} photo...`);
+      try {
+        const base64Data = await processAndCompressImage(file);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (side === 'front') sp.frontPhoto = data.url;
+          else sp.backPhoto = data.url;
+          renderOtherStatePermits();
+          await saveCcwPhotosDirect();
+          showToast(`✅ ${sp.state} ${side} permit photo saved!`);
+        }
+      } catch (err) {
+        showToast('Photo upload failed');
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    async function rotateStatePermitPhoto(idx, side) {
+      const sp = currentOtherStatePermits[idx];
+      if (!sp) return;
+      const url = side === 'front' ? sp.frontPhoto : sp.backPhoto;
+      if (!url) return;
+
+      showToast('Rotating state permit photo 90°...');
+      try {
+        const rotatedData = await rotateImage(url, 90);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: rotatedData })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (side === 'front') sp.frontPhoto = data.url;
+          else sp.backPhoto = data.url;
+          renderOtherStatePermits();
+          await saveCcwPhotosDirect();
+          showToast('State permit photo rotated & saved');
+        }
+      } catch (err) {
+        showToast('Failed to rotate photo');
+      }
+    }
+
+    async function deleteStatePermitPhoto(idx, side) {
+      const sp = currentOtherStatePermits[idx];
+      if (!sp) return;
+      if (!confirm(`Remove ${side} photo for ${sp.state} permit?`)) return;
+      if (side === 'front') sp.frontPhoto = '';
+      else sp.backPhoto = '';
+      renderOtherStatePermits();
+      await saveCcwPhotosDirect();
+      showToast('Photo removed');
+    }
+
+    async function archiveStatePermitToHistory(idx) {
+      const sp = currentOtherStatePermits[idx];
+      if (!sp) return;
+      const expYear = sp.expirationDate ? sp.expirationDate.slice(0, 4) : new Date().getFullYear();
+      const issueYear = sp.issueDate ? sp.issueDate.slice(0, 4) : (parseInt(expYear) - 5);
+      const defaultPeriod = `${issueYear} - ${expYear}`;
+      const period = prompt(`Enter validity period for archived ${sp.state} permit:`, defaultPeriod);
+      if (!period) return;
+
+      currentCcwPermitHistory.unshift({
+        id: 'hist-' + Date.now(),
+        state: sp.state || 'Out-of-State',
+        period: period.trim(),
+        permitNumber: sp.permitNumber || '',
+        issueDate: sp.issueDate || '',
+        expirationDate: sp.expirationDate || '',
+        agency: sp.issuingAgency || '',
+        frontPhoto: sp.frontPhoto || '',
+        backPhoto: sp.backPhoto || '',
+        notes: sp.notes || `Archived from ${sp.state} CCW permit on ${new Date().toLocaleDateString()}`,
+        archivedAt: new Date().toISOString()
+      });
+      updatePriorPermitsCompactBar();
+      await saveCcwPhotosDirect();
+      showToast(`✅ ${sp.state} (${period}) archived to Prior Permits!`);
+    }
+
+    // ----------------------------------------------------------------------
+    // NRA Membership & Credential Card Operations
+    // ----------------------------------------------------------------------
+    function populateNraFields() {
+      document.getElementById('nraMemberId').value = currentNraMembership.memberId || '';
+      document.getElementById('nraMemberLevel').value = currentNraMembership.memberLevel || 'Annual Member';
+      document.getElementById('nraJoinDate').value = currentNraMembership.joinDate || '';
+      document.getElementById('nraExpirationDate').value = currentNraMembership.expirationDate || '';
+      document.getElementById('nraNotes').value = currentNraMembership.notes || '';
+      document.getElementById('nraNotify90Days').checked = currentNraMembership.notify90Days !== false;
+      renderNraCardPhotos();
+    }
+
+    function renderNraCardPhotos() {
+      const headerBadge = document.getElementById('nraStatusHeaderBadge');
+      if (headerBadge) {
+        const lvl = currentNraMembership.memberLevel || 'NRA Member';
+        const days = calcDaysUntil(currentNraMembership.expirationDate);
+        if (lvl.toLowerCase().includes('life') || lvl.toLowerCase().includes('endowment') || lvl.toLowerCase().includes('patron') || lvl.toLowerCase().includes('benefactor')) {
+          headerBadge.textContent = `🦅 ${lvl} • Lifetime`;
+        } else if (days !== null) {
+          headerBadge.textContent = days >= 0 ? `🦅 ${lvl} • ${days}d Left` : `🦅 ${lvl} • Expired`;
+        } else {
+          headerBadge.textContent = `🦅 ${lvl}`;
+        }
+      }
+
+      // Front
+      const fImg = document.getElementById('nraFrontImg');
+      const fPl = document.getElementById('nraFrontPlaceholder');
+      const fBadge = document.getElementById('nraFrontBadge');
+      const fZoom = document.getElementById('nraFrontZoomBtn');
+      const fRot = document.getElementById('nraFrontRotateBtn');
+      const fDel = document.getElementById('nraFrontDeleteBtn');
+      if (currentNraMembership.frontPhoto) {
+        fImg.src = currentNraMembership.frontPhoto;
+        fImg.style.display = 'block';
+        fPl.style.display = 'none';
+        fBadge.textContent = 'Photo On File';
+        fBadge.style.background = 'rgba(16,185,129,0.2)';
+        fBadge.style.color = '#34d399';
+        fZoom.style.display = 'inline-flex';
+        fRot.style.display = 'inline-flex';
+        fDel.style.display = 'inline-flex';
+      } else {
+        fImg.src = '';
+        fImg.style.display = 'none';
+        fPl.style.display = 'flex';
+        fBadge.textContent = 'No Photo';
+        fBadge.style.background = 'rgba(148,163,184,0.15)';
+        fBadge.style.color = '#94a3b8';
+        fZoom.style.display = 'none';
+        fRot.style.display = 'none';
+        fDel.style.display = 'none';
+      }
+
+      // Back
+      const bImg = document.getElementById('nraBackImg');
+      const bPl = document.getElementById('nraBackPlaceholder');
+      const bBadge = document.getElementById('nraBackBadge');
+      const bZoom = document.getElementById('nraBackZoomBtn');
+      const bRot = document.getElementById('nraBackRotateBtn');
+      const bDel = document.getElementById('nraBackDeleteBtn');
+      if (currentNraMembership.backPhoto) {
+        bImg.src = currentNraMembership.backPhoto;
+        bImg.style.display = 'block';
+        bPl.style.display = 'none';
+        bBadge.textContent = 'Photo On File';
+        bBadge.style.background = 'rgba(16,185,129,0.2)';
+        bBadge.style.color = '#34d399';
+        bZoom.style.display = 'inline-flex';
+        bRot.style.display = 'inline-flex';
+        bDel.style.display = 'inline-flex';
+      } else {
+        bImg.src = '';
+        bImg.style.display = 'none';
+        bPl.style.display = 'flex';
+        bBadge.textContent = 'No Photo';
+        bBadge.style.background = 'rgba(148,163,184,0.15)';
+        bBadge.style.color = '#94a3b8';
+        bZoom.style.display = 'none';
+        bRot.style.display = 'none';
+        bDel.style.display = 'none';
+      }
+    }
+
+    async function handleNraPhotoUpload(event, side) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      showToast(`Optimizing & uploading NRA ${side} card photo...`);
+      try {
+        const base64Data = await processAndCompressImage(file);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (side === 'front') currentNraMembership.frontPhoto = data.url;
+          else currentNraMembership.backPhoto = data.url;
+          renderNraCardPhotos();
+          await saveCcwPhotosDirect();
+          showToast(`✅ NRA ${side} card photo saved!`);
+        }
+      } catch (err) {
+        showToast('NRA photo upload failed');
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    async function rotateNraPhoto(side) {
+      const url = side === 'front' ? currentNraMembership.frontPhoto : currentNraMembership.backPhoto;
+      if (!url) return;
+      showToast('Rotating NRA card 90°...');
+      try {
+        const rotatedData = await rotateImage(url, 90);
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: rotatedData })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (side === 'front') currentNraMembership.frontPhoto = data.url;
+          else currentNraMembership.backPhoto = data.url;
+          renderNraCardPhotos();
+          await saveCcwPhotosDirect();
+          showToast('NRA card rotated & saved');
+        }
+      } catch (err) {
+        showToast('Failed to rotate NRA card');
+      }
+    }
+
+    async function deleteNraPhoto(side) {
+      if (!confirm(`Remove ${side} photo of your NRA membership card?`)) return;
+      if (side === 'front') currentNraMembership.frontPhoto = '';
+      else currentNraMembership.backPhoto = '';
+      renderNraCardPhotos();
+      await saveCcwPhotosDirect();
+      showToast('NRA card photo removed');
+    }
+
+    function openNraCardZoom(side) {
+      const url = side === 'front' ? currentNraMembership.frontPhoto : currentNraMembership.backPhoto;
+      if (!url) return;
+      openPhotoZoomDirect(url, `NRA Membership Card - ${side === 'front' ? 'Front' : 'Back'}`);
     }
 
     // Interactive Photo Zoom direct launcher for any standalone image URL
@@ -6166,21 +7009,73 @@
       modal.classList.add('active');
     }
 
-    // Multi-Year History Archive Operations
+    // ----------------------------------------------------------------------
+    // Click-to-View Prior CCW Permits Viewer Modal (No Vertical Stacking)
+    // ----------------------------------------------------------------------
+    function getSortedPermitHistory() {
+      return [...(currentCcwPermitHistory || [])].sort((a, b) => {
+        const yearA = parseInt(String(a.period || a.expirationDate || '0').match(/\d{4}/)?.[0] || '0');
+        const yearB = parseInt(String(b.period || b.expirationDate || '0').match(/\d{4}/)?.[0] || '0');
+        return yearB - yearA;
+      });
+    }
+
+    function updatePriorPermitsCompactBar() {
+      const countBadge = document.getElementById('priorPermitsCountBadge');
+      const pillsEl = document.getElementById('priorPermitsQuickPills');
+      const sorted = getSortedPermitHistory();
+      if (countBadge) {
+        countBadge.textContent = `${sorted.length} Saved`;
+      }
+      if (pillsEl) {
+        if (sorted.length === 0) {
+          pillsEl.innerHTML = 'Click <strong>View Prior Permits</strong> or <strong>+ Add Prior Permit</strong> to track your historical cards by year.';
+        } else {
+          const pills = sorted.map(item => {
+            const st = item.state ? `${escapeHtml(item.state)} • ` : '';
+            return `<span onclick="openPriorPermitsViewerModal('${escapeHtml(item.id)}')" style="cursor:pointer; display:inline-block; background:rgba(56,189,248,0.14); border:1px solid rgba(56,189,248,0.35); color:#38bdf8; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem; margin-right:6px; margin-top:3px;" title="Click to view this prior permit">${st}${escapeHtml(item.period || 'Prior')}</span>`;
+          }).join('');
+          pillsEl.innerHTML = `<span style="margin-right:6px;">Click a year to view:</span> ${pills}`;
+        }
+      }
+    }
+
+    function openPriorPermitsViewerModal(targetId) {
+      const sorted = getSortedPermitHistory();
+      if (targetId) {
+        activePriorPermitId = targetId;
+      } else if (sorted.length > 0) {
+        activePriorPermitId = sorted[0].id;
+      } else {
+        activePriorPermitId = 'ALL';
+      }
+      renderCcwPermitHistory();
+      document.getElementById('priorPermitsViewerModal').classList.add('active');
+    }
+
+    function closePriorPermitsViewerModal() {
+      document.getElementById('priorPermitsViewerModal').classList.remove('active');
+    }
+
     function renderCcwPermitHistory() {
+      updatePriorPermitsCompactBar();
       const container = document.getElementById('ccwPermitHistoryContainer');
+      const tabsEl = document.getElementById('priorPermitsSelectorTabs');
       if (!container) return;
       container.innerHTML = '';
+      if (tabsEl) tabsEl.innerHTML = '';
 
-      if (!currentCcwPermitHistory || currentCcwPermitHistory.length === 0) {
+      const sorted = getSortedPermitHistory();
+
+      if (sorted.length === 0) {
         container.innerHTML = `
-          <div style="text-align:center; padding:24px 16px; background:rgba(0,0,0,0.2); border:1px dashed var(--border-color); border-radius:var(--radius-sm); color:var(--text-muted);">
-            <div style="font-size:1.6rem; margin-bottom:6px;">🗂️</div>
-            <div style="font-weight:700; font-size:0.9rem; color:var(--text-main);">No Prior CCW Permits in Archive</div>
-            <p style="font-size:0.78rem; margin:4px 0 10px 0; color:var(--text-dim);">
-              Keep a timeline of your past CCW cards across the years for nostalgia and compliance tracking.
+          <div style="text-align:center; padding:28px 16px; background:rgba(0,0,0,0.2); border:1px dashed var(--border-color); border-radius:var(--radius-sm); color:var(--text-muted);">
+            <div style="font-size:1.8rem; margin-bottom:6px;">🗂️</div>
+            <div style="font-weight:700; font-size:0.95rem; color:var(--text-main);">No Prior CCW Permits in Archive Yet</div>
+            <p style="font-size:0.8rem; margin:6px 0 14px 0; color:var(--text-dim);">
+              Keep a timeline of your past CCW cards across the years for nostalgia and record-keeping.
             </p>
-            <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal()" style="font-size:0.75rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
+            <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal()" style="font-size:0.78rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
               + Add Your First Historical Permit
             </button>
           </div>
@@ -6188,63 +7083,90 @@
         return;
       }
 
-      // Sort by expiration/period year descending (most recent first)
-      const sorted = [...currentCcwPermitHistory].sort((a, b) => {
-        const yearA = parseInt(String(a.period || a.expirationDate || '0').match(/\d{4}/)?.[0] || '0');
-        const yearB = parseInt(String(b.period || b.expirationDate || '0').match(/\d{4}/)?.[0] || '0');
-        return yearB - yearA;
-      });
+      if (!sorted.some(x => x.id === activePriorPermitId)) {
+        activePriorPermitId = sorted[0].id;
+      }
 
-      sorted.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'historical-permit-card';
+      // Render Clickable Year/State Tabs inside the Viewer Modal
+      if (tabsEl) {
+        sorted.forEach(item => {
+          const isSel = item.id === activePriorPermitId;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn ' + (isSel ? 'btn-primary' : 'btn-secondary');
+          btn.style.cssText = isSel
+            ? 'padding:5px 12px; font-size:0.78rem; font-weight:700;'
+            : 'padding:5px 12px; font-size:0.78rem; opacity:0.8;';
+          const stPrefix = item.state ? `${item.state} • ` : '';
+          btn.textContent = `🪪 ${stPrefix}${item.period || 'Prior Permit'}`;
+          btn.onclick = () => {
+            activePriorPermitId = item.id;
+            renderCcwPermitHistory();
+          };
+          tabsEl.appendChild(btn);
+        });
+      }
 
-        const frontHtml = item.frontPhoto
-          ? `<div style="cursor:pointer; position:relative; width:130px; height:85px; border-radius:6px; overflow:hidden; border:1px solid rgba(56,189,248,0.3); background:#070b12;" onclick="openPhotoZoomDirect('${item.frontPhoto}', '${item.period} Permit - Front')" title="Click to zoom Front">
-              <img src="${item.frontPhoto}" style="width:100%; height:100%; object-fit:contain;">
-              <span style="position:absolute; bottom:2px; right:3px; background:rgba(0,0,0,0.8); color:#38bdf8; font-size:0.6rem; font-weight:700; padding:1px 4px; border-radius:3px;">Front 🔍</span>
-            </div>`
-          : `<div style="width:130px; height:85px; border-radius:6px; border:1px dashed var(--border-color); background:#070b12; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.7rem;"><span>No Front</span></div>`;
+      const item = sorted.find(x => x.id === activePriorPermitId) || sorted[0];
+      const card = document.createElement('div');
+      card.className = 'historical-permit-card';
 
-        const backHtml = item.backPhoto
-          ? `<div style="cursor:pointer; position:relative; width:130px; height:85px; border-radius:6px; overflow:hidden; border:1px solid rgba(56,189,248,0.3); background:#070b12;" onclick="openPhotoZoomDirect('${item.backPhoto}', '${item.period} Permit - Back')" title="Click to zoom Back">
-              <img src="${item.backPhoto}" style="width:100%; height:100%; object-fit:contain;">
-              <span style="position:absolute; bottom:2px; right:3px; background:rgba(0,0,0,0.8); color:#38bdf8; font-size:0.6rem; font-weight:700; padding:1px 4px; border-radius:3px;">Back 🔍</span>
-            </div>`
-          : `<div style="width:130px; height:85px; border-radius:6px; border:1px dashed var(--border-color); background:#070b12; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.7rem;"><span>No Back</span></div>`;
+      const frontHtml = item.frontPhoto
+        ? `<div class="permit-card-box">
+             <div class="permit-card-box-header">
+               <span style="font-weight:700; font-size:0.82rem; color:#38bdf8;">🪪 Front of Archived Card</span>
+               <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(item.frontPhoto)}', '${escapeHtml(item.period)} Permit - Front')" style="padding:2px 8px; font-size:0.7rem;">🔍 Full Screen</button>
+             </div>
+             <div class="permit-card-preview-wrap" style="height:175px;" onclick="openPhotoZoomDirect('${escapeHtml(item.frontPhoto)}', '${escapeHtml(item.period)} Permit - Front')">
+               <img src="${escapeHtml(item.frontPhoto)}" class="permit-card-img" style="display:block;" alt="Archived Front">
+             </div>
+           </div>`
+        : `<div class="permit-card-box"><div class="permit-card-preview-wrap" style="height:175px; cursor:default;"><div class="permit-card-placeholder"><span>No Front Photo Recorded</span></div></div></div>`;
 
-        const datesText = (item.issueDate || item.expirationDate)
-          ? `${item.issueDate ? formatDateUS(item.issueDate) : '?'} → ${item.expirationDate ? formatDateUS(item.expirationDate) : '?'}`
-          : '';
+      const backHtml = item.backPhoto
+        ? `<div class="permit-card-box">
+             <div class="permit-card-box-header">
+               <span style="font-weight:700; font-size:0.82rem; color:#38bdf8;">🪪 Back of Archived Card</span>
+               <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(item.backPhoto)}', '${escapeHtml(item.period)} Permit - Back')" style="padding:2px 8px; font-size:0.7rem;">🔍 Full Screen</button>
+             </div>
+             <div class="permit-card-preview-wrap" style="height:175px;" onclick="openPhotoZoomDirect('${escapeHtml(item.backPhoto)}', '${escapeHtml(item.period)} Permit - Back')">
+               <img src="${escapeHtml(item.backPhoto)}" class="permit-card-img" style="display:block;" alt="Archived Back">
+             </div>
+           </div>`
+        : `<div class="permit-card-box"><div class="permit-card-preview-wrap" style="height:175px; cursor:default;"><div class="permit-card-placeholder"><span>No Back Photo Recorded</span></div></div></div>`;
 
-        card.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="badge-tag" style="background:#0284c7; color:#fff; font-weight:800; font-size:0.82rem; padding:3px 8px;">${item.period || 'Prior Permit'}</span>
-              ${item.permitNumber ? `<span style="font-size:0.78rem; color:var(--text-muted); font-family:monospace;">#${item.permitNumber}</span>` : ''}
-              ${datesText ? `<span style="font-size:0.75rem; color:#94a3b8; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px;">${datesText}</span>` : ''}
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal('${item.id}')" style="padding:2px 8px; font-size:0.72rem;">
-                ✏️ Edit
-              </button>
-              <button type="button" class="btn btn-ghost" onclick="deleteHistoricalPermit('${item.id}')" style="padding:2px 6px; font-size:0.72rem; color:#fb7185;" title="Remove this archived permit">
-                ✕
-              </button>
-            </div>
+      const datesText = (item.issueDate || item.expirationDate)
+        ? `${item.issueDate ? formatDateUS(item.issueDate) : '?'} → ${item.expirationDate ? formatDateUS(item.expirationDate) : '?'}`
+        : '';
+
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span class="badge-tag" style="background:#0284c7; color:#fff; font-weight:800; font-size:0.85rem; padding:4px 10px;">${escapeHtml(item.state || 'California')} • ${escapeHtml(item.period || 'Prior Permit')}</span>
+            ${item.permitNumber ? `<span style="font-size:0.82rem; color:var(--text-main); font-family:monospace; font-weight:700;">#${escapeHtml(item.permitNumber)}</span>` : ''}
+            ${datesText ? `<span style="font-size:0.78rem; color:#94a3b8; background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:4px;">Valid: ${escapeHtml(datesText)}</span>` : ''}
           </div>
-
-          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-            ${frontHtml}
-            ${backHtml}
-            <div style="flex:1; min-width:180px; font-size:0.8rem; line-height:1.45;">
-              <div style="color:#93c5fd; font-weight:600; font-size:0.78rem;">${item.agency || "San Diego County Sheriff's Department"}</div>
-              ${item.notes ? `<div style="color:var(--text-muted); margin-top:4px; font-style:italic;">"${item.notes}"</div>` : `<div style="color:var(--text-dim); margin-top:4px;">No notes recorded</div>`}
-            </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-secondary" onclick="openHistoricalPermitModal('${escapeHtml(item.id)}')" style="padding:4px 10px; font-size:0.75rem;">
+              ✏️ Edit Record
+            </button>
+            <button type="button" class="btn btn-ghost" onclick="deleteHistoricalPermit('${escapeHtml(item.id)}')" style="padding:4px 8px; font-size:0.75rem; color:#fb7185;" title="Remove this archived permit">
+              🗑️ Delete
+            </button>
           </div>
-        `;
-        container.appendChild(card);
-      });
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:10px;">
+          ${frontHtml}
+          ${backHtml}
+        </div>
+
+        <div style="background:rgba(15,23,42,0.6); border:1px solid var(--border-color); border-radius:6px; padding:10px 12px; font-size:0.82rem;">
+          <div style="color:#93c5fd; font-weight:700;">Issuing Agency: <span style="color:#f8fafc; font-weight:500;">${escapeHtml(item.agency || "San Diego County Sheriff's Department")}</span></div>
+          ${item.notes ? `<div style="color:var(--text-muted); margin-top:4px; font-style:italic;">"${escapeHtml(item.notes)}"</div>` : `<div style="color:var(--text-dim); margin-top:4px;">No nostalgia notes recorded for this period.</div>`}
+        </div>
+      `;
+      container.appendChild(card);
     }
 
     // 1-Click: Archive Current CCW Permit Card to Multi-Year History
@@ -6259,11 +7181,12 @@
       const issueYear = ccwData && ccwData.issueDate ? ccwData.issueDate.slice(0, 4) : (parseInt(expYear) - 2);
       const defaultPeriod = `${issueYear} - ${expYear}`;
 
-      const period = prompt('Enter validity period for this archived permit:', defaultPeriod);
+      const period = prompt('Enter validity period for this archived California permit:', defaultPeriod);
       if (!period) return;
 
       const newEntry = {
         id: 'hist-' + Date.now(),
+        state: 'California',
         period: period.trim(),
         permitNumber: (ccwData && ccwData.permitNumber) || '',
         issueDate: (ccwData && ccwData.issueDate) || '',
@@ -6271,14 +7194,15 @@
         agency: (ccwData && ccwData.issuingAgency) || "San Diego County Sheriff's Department",
         frontPhoto: currentCcwFrontPhoto,
         backPhoto: currentCcwBackPhoto,
-        notes: `Archived from active CCW permit card on ${new Date().toLocaleDateString()}`,
+        notes: `Archived from active California CCW permit card on ${new Date().toLocaleDateString()}`,
         archivedAt: new Date().toISOString()
       };
 
       currentCcwPermitHistory.unshift(newEntry);
+      activePriorPermitId = newEntry.id;
       renderCcwPermitHistory();
       await saveCcwPhotosDirect();
-      showToast(`✅ ${period} permit archived to multi-year history!`);
+      showToast(`✅ ${period} permit archived to Prior Permits!`);
     }
 
     // Modal: Open Add / Edit Historical Permit Modal
@@ -6292,6 +7216,7 @@
         item = currentCcwPermitHistory.find(h => h.id === id);
       }
 
+      document.getElementById('historicalState').value = item ? (item.state || 'California') : 'California';
       document.getElementById('historicalPeriod').value = item ? item.period : '';
       document.getElementById('historicalPermitNumber').value = item ? (item.permitNumber || '') : '';
       document.getElementById('historicalIssueDate').value = item ? (item.issueDate || '') : '';
@@ -6386,6 +7311,7 @@
 
     async function saveHistoricalPermit() {
       const id = document.getElementById('historicalPermitId').value;
+      const state = document.getElementById('historicalState').value.trim() || 'California';
       const period = document.getElementById('historicalPeriod').value.trim();
       if (!period) {
         showToast('Please enter a validity period or year');
@@ -6394,6 +7320,7 @@
 
       const entry = {
         id: id || ('hist-' + Date.now()),
+        state: state,
         period: period,
         permitNumber: document.getElementById('historicalPermitNumber').value.trim(),
         issueDate: document.getElementById('historicalIssueDate').value,
@@ -6412,6 +7339,7 @@
         currentCcwPermitHistory.unshift(entry);
       }
 
+      activePriorPermitId = entry.id;
       renderCcwPermitHistory();
       await saveCcwPhotosDirect();
       closeHistoricalPermitModal();

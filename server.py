@@ -21,10 +21,11 @@ import ssl
 import smtplib
 import zipfile
 import io
+import html as html_lib
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 # Configuration & Paths
@@ -213,6 +214,53 @@ def get_seed_data():
             "frontPhoto": "",
             "backPhoto": "",
             "permitHistory": [],
+            "otherStatePermits": [
+                {
+                    "id": "state-utah",
+                    "state": "Utah",
+                    "permitName": "Utah Non-Resident Concealed Firearm Permit (CFP)",
+                    "issuingAgency": "Utah Bureau of Criminal Identification (BCI)",
+                    "permitNumber": "",
+                    "status": "Active",
+                    "issueDate": "",
+                    "expirationDate": "",
+                    "notify90Days": True,
+                    "stopAlerts90Days": False,
+                    "renewalCompleted": False,
+                    "portalUrl": "https://bci.utah.gov/concealed-firearm/",
+                    "frontPhoto": "",
+                    "backPhoto": "",
+                    "notes": ""
+                },
+                {
+                    "id": "state-arizona",
+                    "state": "Arizona",
+                    "permitName": "Arizona Concealed Weapons Permit (CWP)",
+                    "issuingAgency": "Arizona Dept. of Public Safety (AZ DPS)",
+                    "permitNumber": "",
+                    "status": "Active",
+                    "issueDate": "",
+                    "expirationDate": "",
+                    "notify90Days": True,
+                    "stopAlerts90Days": False,
+                    "renewalCompleted": False,
+                    "portalUrl": "https://www.azdps.gov/services/public/cwp",
+                    "frontPhoto": "",
+                    "backPhoto": "",
+                    "notes": ""
+                }
+            ],
+            "nraMembership": {
+                "memberId": "",
+                "memberLevel": "Annual Member",
+                "status": "Active",
+                "joinDate": "",
+                "expirationDate": "",
+                "notify90Days": True,
+                "frontPhoto": "",
+                "backPhoto": "",
+                "notes": ""
+            },
             "lastAlertSent": None,
             "alertHistory": []
         },
@@ -334,30 +382,32 @@ def send_smtp_email(to_emails, subject, html_content):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+def _format_us_date_str(raw_date):
+    if not raw_date:
+        return "Not set"
+    try:
+        parts = str(raw_date).split("-")
+        if len(parts) == 3 and len(parts[0]) == 4:
+            return f"{parts[1]}-{parts[2]}-{parts[0]}"
+        return str(raw_date)
+    except Exception:
+        return str(raw_date)
+
 def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
-    """Generates an executive, mobile-friendly HTML alert detailing renewal milestones."""
+    """Generates an executive, mobile-friendly HTML alert detailing CA & Out-of-State CCW renewal milestones."""
     raw_exp = ccw.get("expirationDate") or ""
-    exp_date_str = "Not set"
-    if raw_exp:
-        try:
-            parts = raw_exp.split("-")
-            if len(parts) == 3 and len(parts[0]) == 4:
-                exp_date_str = f"{parts[1]}-{parts[2]}-{parts[0]}"
-            else:
-                exp_date_str = raw_exp
-        except Exception:
-            exp_date_str = raw_exp
-    permit_num = ccw.get("permitNumber") or "On File"
-    holder = ccw.get("holderName") or "Phimane"
-    agency = ccw.get("issuingAgency") or "San Diego County Sheriff's Department"
+    exp_date_str = html_lib.escape(_format_us_date_str(raw_exp))
+    permit_num = html_lib.escape(str(ccw.get("permitNumber") or "On File"))
+    holder = html_lib.escape(str(ccw.get("holderName") or "Phimane"))
+    agency = html_lib.escape(str(ccw.get("issuingAgency") or "San Diego County Sheriff's Department"))
 
     # Status checkmarks
     livescan_icon = "✅ Completed" if ccw.get("liveScanCompleted") else "⚠️ Pending Action"
     training_icon = "✅ Completed" if ccw.get("trainingCompleted") else "⚠️ Pending Action"
     upload_icon = "✅ Uploaded" if ccw.get("sdsoUploadCompleted") else "⚠️ Pending Action (Deadline: 90 Days Prior)"
 
-    training_company = ccw.get("trainingCompany") or ""
-    training_address = ccw.get("trainingAddress") or ""
+    training_company = html_lib.escape(str(ccw.get("trainingCompany") or ""))
+    training_address = html_lib.escape(str(ccw.get("trainingAddress") or ""))
     class_location_html = ""
     if training_company or training_address:
         loc_parts = []
@@ -367,8 +417,78 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
             loc_parts.append(f"<strong>Location/Address:</strong> {training_address}")
         class_location_html = f"""<div style="margin-top:6px; font-size:12px; color:#93c5fd; background:rgba(59,130,246,0.1); padding:6px 10px; border-radius:4px; border:1px solid rgba(59,130,246,0.25);">{' &bull; '.join(loc_parts)}</div>"""
 
-    header_color = "#f43f5e" if days_left <= 60 else ("#f59e0b" if days_left <= 90 else "#0284c7")
-    badge_text = "URGENT ACTION REQUIRED" if days_left <= 60 else ("CRITICAL RENEWAL WINDOW" if days_left <= 90 else "CCW RENEWAL NOTICE")
+    # Out-of-State Permits HTML block
+    today = datetime.now().date()
+    other_permits = ccw.get("otherStatePermits") or []
+    other_permits_rows = ""
+    min_days = days_left if days_left is not None else 9999
+
+    for sp in other_permits:
+        st_name = html_lib.escape(str(sp.get("state") or "Out-of-State"))
+        sp_num = html_lib.escape(str(sp.get("permitNumber") or "Not Entered"))
+        sp_exp_raw = sp.get("expirationDate") or ""
+        sp_exp_us = html_lib.escape(_format_us_date_str(sp_exp_raw))
+        sp_days_txt = "No Exp Date Set"
+        sp_color = "#94a3b8"
+        if sp_exp_raw:
+            try:
+                sp_d = (datetime.strptime(sp_exp_raw, "%Y-%m-%d").date() - today).days
+                if sp_d < min_days:
+                    min_days = sp_d
+                if sp_d < 0:
+                    sp_days_txt = f"EXPIRED ({abs(sp_d)}d ago)"
+                    sp_color = "#f43f5e"
+                elif sp_d <= 90:
+                    sp_days_txt = f"⚠️ {sp_d} Days Left (90-Day Renewal Window)"
+                    sp_color = "#f59e0b"
+                else:
+                    sp_days_txt = f"✅ {sp_d} Days Remaining"
+                    sp_color = "#34d399"
+            except Exception:
+                pass
+        other_permits_rows += f"""
+        <tr>
+          <td style="padding:10px 12px; border-bottom:1px solid #334155; color:#f8fafc; font-weight:700;">{st_name} CCW</td>
+          <td style="padding:10px 12px; border-bottom:1px solid #334155; color:#cbd5e1; font-family:monospace;">{sp_num}</td>
+          <td style="padding:10px 12px; border-bottom:1px solid #334155; color:#f8fafc;">{sp_exp_us}</td>
+          <td style="padding:10px 12px; border-bottom:1px solid #334155; color:{sp_color}; font-weight:700;">{sp_days_txt}</td>
+        </tr>"""
+
+    other_permits_html = ""
+    if other_permits_rows:
+        other_permits_html = f"""
+        <h2 style="margin:20px 0 10px 0; font-size:15px; font-weight:700; color:#a78bfa; text-transform:uppercase; letter-spacing:0.04em;">🗺️ Out-of-State CCW Permits (Utah / Arizona / Other):</h2>
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1e293b; border:1px solid #334155; border-radius:8px; margin-bottom:20px; font-size:12px; border-collapse:collapse;">
+          <thead>
+            <tr style="background-color:#0f172a; color:#94a3b8; text-align:left;">
+              <th style="padding:8px 12px; border-bottom:1px solid #334155;">State</th>
+              <th style="padding:8px 12px; border-bottom:1px solid #334155;">Permit #</th>
+              <th style="padding:8px 12px; border-bottom:1px solid #334155;">Expires</th>
+              <th style="padding:8px 12px; border-bottom:1px solid #334155;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {other_permits_rows}
+          </tbody>
+        </table>"""
+
+    # NRA Membership HTML block
+    nra = ccw.get("nraMembership") or {}
+    nra_html = ""
+    if nra.get("memberId") or nra.get("expirationDate"):
+        nra_id = html_lib.escape(str(nra.get("memberId") or "On File"))
+        nra_lvl = html_lib.escape(str(nra.get("memberLevel") or "Member"))
+        nra_exp = html_lib.escape(_format_us_date_str(nra.get("expirationDate"))) if nra.get("expirationDate") else "Life / No Expiration"
+        nra_html = f"""
+        <div style="background-color:#1e293b; border:1px solid rgba(245,158,11,0.35); border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:13px;">
+          <div style="font-weight:700; color:#fbbf24; margin-bottom:4px;">🦅 NRA Membership ({nra_lvl})</div>
+          <div style="color:#cbd5e1;">Member ID: <strong>{nra_id}</strong> &bull; Expiration: <strong>{nra_exp}</strong></div>
+        </div>"""
+
+    eff_days = days_left if days_left is not None else min_days
+    header_color = "#f43f5e" if eff_days <= 60 else ("#f59e0b" if eff_days <= 90 else "#0284c7")
+    badge_text = "URGENT ACTION REQUIRED" if eff_days <= 60 else ("CRITICAL 90-DAY RENEWAL WINDOW" if eff_days <= 90 else "CCW RENEWAL NOTICE")
+    days_banner_str = f"{days_left} Days Remaining Until CA Expiration ({exp_date_str})" if days_left is not None else "Multi-State CCW Compliance & Expiration Monitor"
 
     html = f"""<!DOCTYPE html>
 <html>
@@ -387,7 +507,7 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
             <td style="background-color:{header_color}; padding:20px 24px; text-align:left;">
               <span style="display:inline-block; font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; background:rgba(0,0,0,0.25); color:#ffffff; padding:3px 8px; border-radius:4px; margin-bottom:8px;">{badge_text}</span>
               <h1 style="margin:0; font-size:22px; font-weight:800; color:#ffffff; letter-spacing:-0.02em;">CCW Permit Renewal Alert</h1>
-              <p style="margin:4px 0 0 0; font-size:14px; color:rgba(255,255,255,0.9);">{days_left} Days Remaining Until Expiration ({exp_date_str})</p>
+              <p style="margin:4px 0 0 0; font-size:14px; color:rgba(255,255,255,0.9);">{days_banner_str}</p>
             </td>
           </tr>
 
@@ -395,7 +515,7 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
           <tr>
             <td style="padding:24px;">
               <p style="margin:0 0 16px 0; font-size:15px; line-height:1.5; color:#cbd5e1;">
-                Hello <strong>{holder}</strong>, your California CCW permit with the <strong>{agency}</strong> will expire in <strong style="color:#f43f5e;">{days_left} days</strong>.
+                Hello <strong>{holder}</strong>, here is your automated CCW permit &amp; membership compliance status from <strong>Armory Vault</strong>.
               </p>
 
               <!-- Overview Card -->
@@ -404,11 +524,11 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
                   <td style="padding:16px;">
                     <table width="100%" cellpadding="6" cellspacing="0" style="font-size:13px;">
                       <tr>
-                        <td style="color:#94a3b8; width:40%;">Permit Number:</td>
+                        <td style="color:#94a3b8; width:40%;">Primary CA Permit #:</td>
                         <td style="color:#f8fafc; font-weight:600;">{permit_num}</td>
                       </tr>
                       <tr>
-                        <td style="color:#94a3b8;">Expiration Date:</td>
+                        <td style="color:#94a3b8;">CA Expiration Date:</td>
                         <td style="color:#f43f5e; font-weight:700;">{exp_date_str}</td>
                       </tr>
                       <tr>
@@ -421,13 +541,13 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
               </table>
 
               <!-- Required Steps Checklist -->
-              <h2 style="margin:0 0 12px 0; font-size:16px; font-weight:700; color:#38bdf8; text-transform:uppercase; letter-spacing:0.04em;">Critical Renewal Protocol:</h2>
+              <h2 style="margin:0 0 12px 0; font-size:16px; font-weight:700; color:#38bdf8; text-transform:uppercase; letter-spacing:0.04em;">Critical CA Renewal Protocol:</h2>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; margin-bottom:20px;">
                 <!-- Step 1 -->
                 <tr>
                   <td style="padding:12px; background-color:#1e293b; border-bottom:1px solid #334155; border-radius:6px 6px 0 0;">
-                    <div style="font-size:14px; font-weight:700; color:#ffffff;">1. CCW Renewal Class & Qualification</div>
+                    <div style="font-size:14px; font-weight:700; color:#ffffff;">1. CCW Renewal Class &amp; Qualification</div>
                     <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Complete approved 8-hour CCW retraining course and live-fire shooting qualification.</div>
                     {class_location_html}
                     <div style="margin-top:6px; font-size:12px; font-weight:600; color:{'#34d399' if ccw.get('trainingCompleted') else '#f59e0b'};">{training_icon}</div>
@@ -450,6 +570,9 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
                   </td>
                 </tr>
               </table>
+
+              {other_permits_html}
+              {nra_html}
 
               <!-- Call to Action -->
               <div style="text-align:center; padding:12px 0 8px 0;">
@@ -475,10 +598,8 @@ def build_ccw_reminder_email(ccw, days_left, urgency_level="normal"):
 
 def check_and_send_ccw_reminders(force=False, test_recipient=None):
     """
-    Checks CCW expiration and milestone pending status to dispatch email reminders.
-    Sends daily emails starting 90 days prior to CCW expiration until all pending milestones
-    are check-marked as completed (or until stopAlerts90Days is checked / email alerts disabled).
-    Also supports custom frequencies for LiveScan, Class, and Upload milestones.
+    Checks CA CCW, Out-of-State CCW permits (Utah, Arizona, etc.), and NRA Membership expiration
+    to dispatch email reminders starting 90 days prior to expiration.
     """
     db = load_db()
     ccw = db.get("ccw", {})
@@ -488,29 +609,27 @@ def check_and_send_ccw_reminders(force=False, test_recipient=None):
     if not ccw.get("emailAlertsEnabled", True) and not force:
         return {"status": "alerts_disabled"}
 
-    exp_str = ccw.get("expirationDate")
-    if not exp_str:
-        return {"status": "no_expiration_date"}
-
-    try:
-        exp_date = datetime.strptime(exp_str, "%Y-%m-%d").date()
-    except Exception:
-        return {"status": "invalid_date_format"}
-
     today = datetime.now().date()
-    days_left = (exp_date - today).days
+    exp_str = ccw.get("expirationDate")
+    days_left = None
+    if exp_str:
+        try:
+            exp_date = datetime.strptime(exp_str, "%Y-%m-%d").date()
+            days_left = (exp_date - today).days
+        except Exception:
+            days_left = None
 
     recipient = test_recipient or ccw.get("recipientEmail") or "phimane@gmail.com"
 
-    # Status checkmarks
-    livescan_done = Boolean(ccw.get("liveScanCompleted")) if 'Boolean' in globals() else bool(ccw.get("liveScanCompleted"))
+    # Status checkmarks for CA CCW
+    livescan_done = bool(ccw.get("liveScanCompleted"))
     training_done = bool(ccw.get("trainingCompleted"))
     upload_done = bool(ccw.get("sdsoUploadCompleted"))
     all_done = livescan_done and training_done and upload_done
     stop_90_days = bool(ccw.get("stopAlerts90Days", False))
 
     should_send = force
-    trigger_reason = "Manual Test / Trigger" if force else ""
+    trigger_reasons = ["Manual Test / Trigger"] if force else []
 
     if not force:
         # Check if already sent today
@@ -525,86 +644,89 @@ def check_and_send_ccw_reminders(force=False, test_recipient=None):
                 pass
 
         if not already_sent_today:
-            # RULE 1: Daily reminders starting 90 days prior to CCW expiration until user check-marks to stop
-            if days_left <= 90 and days_left > 0:
+            # RULE 1: CA CCW Daily reminders starting 90 days prior to expiration
+            if days_left is not None and 0 < days_left <= 90:
                 if not stop_90_days and not all_done:
                     should_send = True
-                    trigger_reason = f"Daily 90-Day Renewal Notice ({days_left} Days Remaining)"
+                    trigger_reasons.append(f"CA CCW 90-Day Notice ({days_left}d left)")
 
-            # RULE 2: Training Class Lead Time Reminder (Remind X days or weeks before scheduled class)
+            # RULE 2: Training Class Lead Time Reminder
             training_date_str = ccw.get("trainingDate")
-            if not should_send and not training_done and training_date_str:
+            if not training_done and training_date_str:
                 try:
                     tr_date = datetime.strptime(training_date_str, "%Y-%m-%d").date()
                     days_until_class = (tr_date - today).days
                     lead_time_choice = ccw.get("trainingLeadTime", "1_week")
                     lead_days_map = {
-                        "1_day": 1,
-                        "2_days": 2,
-                        "3_days": 3,
-                        "5_days": 5,
-                        "1_week": 7,
-                        "2_weeks": 14,
-                        "3_weeks": 21,
-                        "1_month": 30
+                        "1_day": 1, "2_days": 2, "3_days": 3, "5_days": 5,
+                        "1_week": 7, "2_weeks": 14, "3_weeks": 21, "1_month": 30
                     }
                     target_lead_days = lead_days_map.get(lead_time_choice, 7)
-                    if days_until_class == target_lead_days or days_until_class == 1 or days_until_class == 0:
+                    if days_until_class in (target_lead_days, 1, 0):
                         should_send = True
-                        if days_until_class == 0:
-                            trigger_reason = f"CCW Class Reminder: TODAY ({training_date_str})"
-                        elif days_until_class == 1:
-                            trigger_reason = f"CCW Class Reminder: TOMORROW ({training_date_str})"
-                        else:
-                            trigger_reason = f"CCW Class Reminder: {days_until_class} Days Before Class ({training_date_str})"
+                        trigger_reasons.append(f"CCW Class Reminder ({days_until_class}d until {training_date_str})")
                 except Exception:
                     pass
 
-            # RULE 3: Configurable recurring reminder frequencies for milestones (LiveScan, Class, Upload)
-            if not should_send and days_left > 0:
-                # Milestone reminder frequencies: 'daily', 'every_2_days', 'every_3_days', 'weekly', 'biweekly', 'monthly'
+            # RULE 3: Configurable recurring reminder frequencies for CA milestones
+            if not should_send and days_left is not None and 0 < days_left <= 120:
                 freq_days_map = {
-                    "daily": 1,
-                    "every_2_days": 2,
-                    "every_3_days": 3,
-                    "weekly": 7,
-                    "biweekly": 14,
-                    "monthly": 30
+                    "daily": 1, "every_2_days": 2, "every_3_days": 3,
+                    "weekly": 7, "biweekly": 14, "monthly": 30
                 }
-
-                # Helper to check if milestone frequency matches today
-                def is_freq_due(freq_str, milestone_name):
+                def is_freq_due(freq_str):
                     days_interval = freq_days_map.get(freq_str, 7)
-                    if days_interval == 1:
-                        return True
-                    # Check day interval based on days_left mod
-                    return (days_left % days_interval) == 0
-
-                ls_freq = ccw.get("liveScanReminderFreq", "weekly")
-                tr_freq = ccw.get("trainingReminderFreq", "weekly")
-                up_freq = ccw.get("uploadReminderFreq", "weekly")
+                    return True if days_interval == 1 else ((days_left % days_interval) == 0)
 
                 pending_reasons = []
-                if not livescan_done and is_freq_due(ls_freq, "LiveScan"):
+                if not livescan_done and is_freq_due(ccw.get("liveScanReminderFreq", "weekly")):
                     pending_reasons.append("LiveScan Pending")
-                if not training_done and is_freq_due(tr_freq, "CCW Class"):
+                if not training_done and is_freq_due(ccw.get("trainingReminderFreq", "weekly")):
                     pending_reasons.append("CCW Class Pending")
-                if not upload_done and is_freq_due(up_freq, "Doc Upload"):
+                if not upload_done and is_freq_due(ccw.get("uploadReminderFreq", "weekly")):
                     pending_reasons.append("Doc Upload Pending")
 
-                if pending_reasons and (days_left <= 120):
+                if pending_reasons:
                     should_send = True
-                    trigger_reason = f"Milestone Reminder: {', '.join(pending_reasons)} ({days_left} Days Left)"
+                    trigger_reasons.append(f"CA Milestones: {', '.join(pending_reasons)} ({days_left}d left)")
+
+            # RULE 4: Out-of-State CCW Permits (Utah, Arizona, etc.) 90-Day Expiration Notification
+            for sp in ccw.get("otherStatePermits", []):
+                sp_exp = sp.get("expirationDate")
+                if not sp_exp:
+                    continue
+                if not sp.get("notify90Days", True) or sp.get("stopAlerts90Days", False) or sp.get("renewalCompleted", False):
+                    continue
+                try:
+                    sp_exp_date = datetime.strptime(sp_exp, "%Y-%m-%d").date()
+                    sp_days = (sp_exp_date - today).days
+                    if 0 < sp_days <= 90:
+                        should_send = True
+                        st_label = sp.get("state") or "Out-of-State"
+                        trigger_reasons.append(f"{st_label} CCW 90-Day Renewal Notice ({sp_days}d left)")
+                except Exception:
+                    pass
+
+            # RULE 5: NRA Membership 90-Day Expiration Notification
+            nra = ccw.get("nraMembership") or {}
+            nra_exp = nra.get("expirationDate")
+            if nra_exp and nra.get("notify90Days", True) and "life" not in str(nra.get("memberLevel", "")).lower():
+                try:
+                    nra_exp_date = datetime.strptime(nra_exp, "%Y-%m-%d").date()
+                    nra_days = (nra_exp_date - today).days
+                    if 0 < nra_days <= 90:
+                        should_send = True
+                        trigger_reasons.append(f"NRA Membership 90-Day Notice ({nra_days}d left)")
+                except Exception:
+                    pass
 
     if should_send:
-        us_exp_str = exp_str
-        try:
-            p = exp_str.split("-")
-            if len(p) == 3 and len(p[0]) == 4:
-                us_exp_str = f"{p[1]}-{p[2]}-{p[0]}"
-        except Exception:
-            pass
-        subject = f"⚠️ CCW Renewal Alert: {days_left} Days Remaining Until Expiration ({us_exp_str})"
+        trigger_reason = " | ".join(trigger_reasons) if trigger_reasons else "Scheduled Alert"
+        if days_left is not None:
+            us_exp_str = _format_us_date_str(exp_str)
+            subject = f"⚠️ CCW Renewal Alert: {days_left} Days Remaining ({us_exp_str})"
+        else:
+            subject = f"⚠️ Armory Vault CCW & Permit Renewal Alert ({trigger_reason})"
         html = build_ccw_reminder_email(ccw, days_left)
         result = send_smtp_email([recipient], subject, html)
 
@@ -638,6 +760,130 @@ def ccw_reminder_worker():
             print(f"[CCW WORKER] Error: {e}")
             time.sleep(300)
 
+DEFAULT_OTHER_STATE_PERMITS = [
+    {
+        "id": "state-utah",
+        "state": "Utah",
+        "permitName": "Utah Non-Resident Concealed Firearm Permit (CFP)",
+        "issuingAgency": "Utah Bureau of Criminal Identification (BCI)",
+        "permitNumber": "",
+        "status": "Active",
+        "issueDate": "",
+        "expirationDate": "",
+        "notify90Days": True,
+        "stopAlerts90Days": False,
+        "renewalCompleted": False,
+        "portalUrl": "https://bci.utah.gov/concealed-firearm/",
+        "frontPhoto": "",
+        "backPhoto": "",
+        "notes": ""
+    },
+    {
+        "id": "state-arizona",
+        "state": "Arizona",
+        "permitName": "Arizona Concealed Weapons Permit (CWP)",
+        "issuingAgency": "Arizona Dept. of Public Safety (AZ DPS)",
+        "permitNumber": "",
+        "status": "Active",
+        "issueDate": "",
+        "expirationDate": "",
+        "notify90Days": True,
+        "stopAlerts90Days": False,
+        "renewalCompleted": False,
+        "portalUrl": "https://www.azdps.gov/services/public/cwp",
+        "frontPhoto": "",
+        "backPhoto": "",
+        "notes": ""
+    }
+]
+
+def _enrich_ccw_data(ccw):
+    """Calculates daysRemaining and 90-day deadlines for CA CCW, Out-of-State permits, and NRA Membership."""
+    today = datetime.now().date()
+
+    # 1. Primary CA CCW
+    days_left = None
+    deadline_90_str = None
+    exp_str = ccw.get("expirationDate")
+    if exp_str:
+        try:
+            exp_date = datetime.strptime(exp_str, "%Y-%m-%d").date()
+            days_left = (exp_date - today).days
+            deadline_90_date = exp_date - timedelta(days=90)
+            deadline_90_str = deadline_90_date.strftime("%Y-%m-%d")
+        except Exception:
+            pass
+    ccw["daysRemaining"] = days_left
+    ccw["deadline90Days"] = deadline_90_str
+
+    # 2. Out-of-State Permits (Utah, Arizona, etc.)
+    if "otherStatePermits" not in ccw or not isinstance(ccw["otherStatePermits"], list):
+        ccw["otherStatePermits"] = [dict(p) for p in DEFAULT_OTHER_STATE_PERMITS]
+
+    for sp in ccw["otherStatePermits"]:
+        sp_days = None
+        sp_dead90 = None
+        sp_exp = sp.get("expirationDate")
+        if sp_exp:
+            try:
+                sp_exp_date = datetime.strptime(sp_exp, "%Y-%m-%d").date()
+                sp_days = (sp_exp_date - today).days
+                sp_dead90 = (sp_exp_date - timedelta(days=90)).strftime("%Y-%m-%d")
+            except Exception:
+                pass
+        sp["daysRemaining"] = sp_days
+        sp["deadline90Days"] = sp_dead90
+
+    # 3. NRA Membership
+    if "nraMembership" not in ccw or not isinstance(ccw["nraMembership"], dict):
+        ccw["nraMembership"] = {
+            "memberId": "",
+            "memberLevel": "Annual Member",
+            "status": "Active",
+            "joinDate": "",
+            "expirationDate": "",
+            "notify90Days": True,
+            "frontPhoto": "",
+            "backPhoto": "",
+            "notes": ""
+        }
+    nra = ccw["nraMembership"]
+    nra_days = None
+    nra_dead90 = None
+    if nra.get("expirationDate"):
+        try:
+            nra_exp_date = datetime.strptime(nra["expirationDate"], "%Y-%m-%d").date()
+            nra_days = (nra_exp_date - today).days
+            nra_dead90 = (nra_exp_date - timedelta(days=90)).strftime("%Y-%m-%d")
+        except Exception:
+            pass
+    nra["daysRemaining"] = nra_days
+    nra["deadline90Days"] = nra_dead90
+    return ccw
+
+
+def _validate_upload_signature(raw_bytes, allow_pdf=False):
+    """Validates binary magic header bytes to reject disguised HTML/JS/script uploads."""
+    if not raw_bytes or len(raw_bytes) < 8:
+        return None
+    if raw_bytes.startswith(b"\xff\xd8\xff"):
+        return "jpg"
+    if raw_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "png"
+    if raw_bytes.startswith(b"GIF87a") or raw_bytes.startswith(b"GIF89a"):
+        return "gif"
+    if raw_bytes.startswith(b"RIFF") and raw_bytes[8:12] == b"WEBP":
+        return "webp"
+    if len(raw_bytes) >= 12 and raw_bytes[4:8] == b"ftyp" and raw_bytes[8:12] in (b"heic", b"heix", b"hevc", b"mif1", b"msf1"):
+        return "heic"
+    if allow_pdf and raw_bytes.startswith(b"%PDF-"):
+        return "pdf"
+    return None
+
+
+MAX_REQUEST_BODY_BYTES = 26 * 1024 * 1024  # 26 MB ceiling
+
+
 class RequestHandler(BaseHTTPRequestHandler):
     def is_origin_allowed(self, origin):
         if not origin:
@@ -661,6 +907,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             return True
         return False
 
+    def enforce_origin_check(self):
+        origin = self.headers.get("Origin")
+        if origin and not self.is_origin_allowed(origin):
+            self.send_error_json(403, "Forbidden: Cross-origin request denied by RFC1918/Tailscale security policy.")
+            return False
+        return True
+
     def send_cors_headers(self):
         origin = self.headers.get("Origin")
         if origin and self.is_origin_allowed(origin):
@@ -671,6 +924,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Max-Age", "86400")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "SAMEORIGIN")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
 
     def do_OPTIONS(self):
         origin = self.headers.get("Origin")
@@ -699,12 +953,16 @@ class RequestHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", 0))
             if length == 0:
                 return {}
+            if length < 0 or length > MAX_REQUEST_BODY_BYTES:
+                return None
             raw = self.rfile.read(length).decode("utf-8")
             return json.loads(raw)
         except Exception:
             return None
 
     def do_GET(self):
+        if not self.enforce_origin_check():
+            return
         url = urlparse(self.path)
         path = url.path.rstrip("/")
         query = parse_qs(url.query)
@@ -763,20 +1021,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         if path == "/api/ccw":
             db = load_db()
             ccw = db.get("ccw", {})
-            # Enrich with active daysLeft and 90-days-prior deadline calculation
-            days_left = None
-            deadline_90_str = None
-            exp_str = ccw.get("expirationDate")
-            if exp_str:
-                try:
-                    exp_date = datetime.strptime(exp_str, "%Y-%m-%d").date()
-                    days_left = (exp_date - datetime.now().date()).days
-                    deadline_90_date = exp_date - timedelta(days=90)
-                    deadline_90_str = deadline_90_date.strftime("%Y-%m-%d")
-                except Exception:
-                    pass
-            ccw["daysRemaining"] = days_left
-            ccw["deadline90Days"] = deadline_90_str
+            need_save = ("otherStatePermits" not in ccw) or ("nraMembership" not in ccw)
+            _enrich_ccw_data(ccw)
+            if need_save:
+                db["ccw"] = ccw
+                save_db(db)
             self.send_json(200, {"success": True, "ccw": ccw})
             return
 
@@ -894,6 +1143,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         }
 
     def do_POST(self):
+        if not self.enforce_origin_check():
+            return
         url = urlparse(self.path)
         path = url.path.rstrip("/")
 
@@ -949,24 +1200,21 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             try:
                 data_str = body["image"]
-                ext = "jpg"
                 if "data:image/" in data_str and ";base64," in data_str:
-                    header, base64_data = data_str.split(";base64,", 1)
-                    if "png" in header:
-                        ext = "png"
-                    elif "webp" in header:
-                        ext = "webp"
-                    elif "heic" in header or "heif" in header:
-                        ext = "heic"
-                    elif "gif" in header:
-                        ext = "gif"
+                    _, base64_data = data_str.split(";base64,", 1)
                 else:
                     base64_data = data_str
 
                 # Clean any whitespace or newlines from base64 string
                 base64_data = "".join(base64_data.split())
                 img_bytes = base64.b64decode(base64_data)
-                filename = f"fa_{int(time.time())}_{uuid.uuid4().hex[:6]}.{ext}"
+
+                detected_ext = _validate_upload_signature(img_bytes, allow_pdf=False)
+                if not detected_ext:
+                    self.send_error_json(400, "Invalid or unsupported image file signature.")
+                    return
+
+                filename = f"fa_{int(time.time())}_{uuid.uuid4().hex[:6]}.{detected_ext}"
                 filepath = safe_resolve_path(UPLOADS_DIR, filename)
 
                 with open(filepath, "wb") as f:
@@ -989,31 +1237,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                 orig_name = body.get("fileName", "document")
                 title = body.get("title", "").strip() or orig_name
                 category = body.get("category", "Receipt").strip()
-                ext = "pdf"
 
                 if "data:" in data_str and ";base64," in data_str:
-                    header, base64_data = data_str.split(";base64,", 1)
-                    if "pdf" in header:
-                        ext = "pdf"
-                    elif "png" in header:
-                        ext = "png"
-                    elif "webp" in header:
-                        ext = "webp"
-                    elif "jpeg" in header or "jpg" in header:
-                        ext = "jpg"
-                    elif "heic" in header or "heif" in header:
-                        ext = "heic"
+                    _, base64_data = data_str.split(";base64,", 1)
                 else:
                     base64_data = data_str
-                    if "." in orig_name:
-                        cand_ext = orig_name.rsplit(".", 1)[1].lower()
-                        if cand_ext in ["pdf", "jpg", "jpeg", "png", "webp", "heic"]:
-                            ext = cand_ext
 
                 base64_data = "".join(base64_data.split())
                 doc_bytes = base64.b64decode(base64_data)
+
+                detected_ext = _validate_upload_signature(doc_bytes, allow_pdf=True)
+                if not detected_ext:
+                    self.send_error_json(400, "Invalid document signature. Only PDF and standard images are allowed.")
+                    return
+
                 doc_id = f"doc_{uuid.uuid4().hex[:8]}"
-                filename = f"doc_{int(time.time())}_{uuid.uuid4().hex[:6]}.{ext}"
+                filename = f"doc_{int(time.time())}_{uuid.uuid4().hex[:6]}.{detected_ext}"
                 filepath = safe_resolve_path(DOCS_DIR, filename)
 
                 with open(filepath, "wb") as f:
@@ -1027,7 +1266,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     "category": category,
                     "fileName": orig_name,
                     "fileSize": len(doc_bytes),
-                    "fileType": ext.upper(),
+                    "fileType": detected_ext.upper(),
                     "url": public_url,
                     "uploadedAt": now_iso
                 }
@@ -1056,6 +1295,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_error_json(404, "Endpoint not found")
 
     def do_PUT(self):
+        if not self.enforce_origin_check():
+            return
         url = urlparse(self.path)
         path = url.path.rstrip("/")
 
@@ -1110,23 +1351,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                 ccw["backPhoto"] = body["backPhoto"]
             if "permitHistory" in body:
                 ccw["permitHistory"] = body["permitHistory"]
+            if "otherStatePermits" in body and isinstance(body["otherStatePermits"], list):
+                ccw["otherStatePermits"] = body["otherStatePermits"]
+            if "nraMembership" in body and isinstance(body["nraMembership"], dict):
+                ccw["nraMembership"] = body["nraMembership"]
 
+            _enrich_ccw_data(ccw)
             db["ccw"] = ccw
             save_db(db)
-
-            # Re-calculate days remaining and 90-days-prior deadline
-            days_left = None
-            deadline_90_str = None
-            if ccw.get("expirationDate"):
-                try:
-                    exp_date = datetime.strptime(ccw["expirationDate"], "%Y-%m-%d").date()
-                    days_left = (exp_date - datetime.now().date()).days
-                    deadline_90_date = exp_date - timedelta(days=90)
-                    deadline_90_str = deadline_90_date.strftime("%Y-%m-%d")
-                except Exception:
-                    pass
-            ccw["daysRemaining"] = days_left
-            ccw["deadline90Days"] = deadline_90_str
             self.send_json(200, {"success": True, "ccw": ccw})
             return
 
@@ -1144,6 +1376,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.send_error_json(404, "Firearm not found.")
                 return
 
+            existing = items[idx]
             now_iso = datetime.now(timezone.utc).isoformat() + "Z"
             for key in ["make", "model", "type", "caliber", "action", "barrelLength", "serialNumber", "location", "status", "purchaseDate", "notes", "soldDate", "soldTo"]:
                 if key in body:
@@ -1181,6 +1414,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_error_json(404, "Endpoint not found")
 
     def do_DELETE(self):
+        if not self.enforce_origin_check():
+            return
         url = urlparse(self.path)
         path = url.path.rstrip("/")
 
@@ -1207,7 +1442,7 @@ def main():
     threading.Thread(target=code_reload_watcher, daemon=True).start()
     threading.Thread(target=ccw_reminder_worker, daemon=True).start()
     server_address = ("0.0.0.0", PORT)
-    httpd = HTTPServer(server_address, RequestHandler)
+    httpd = ThreadingHTTPServer(server_address, RequestHandler)
     print(f"[FIREARMS INVENTORY] Running on port {PORT}...")
     try:
         httpd.serve_forever()
