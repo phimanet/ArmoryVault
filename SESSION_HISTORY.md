@@ -128,3 +128,8 @@
 - **1-Click "Move Expiring License to History & Enter New License" Workflow**:
   - **Main California CCW**: Added `📦 Move to History & Renew` button in the expiration banner and above card previews. Prompts for history validity period, packages current permit into history, resets active California license inputs & photos in DOM and backend disk, and smoothly focuses `#ccwPermitNumber` for immediate entry of the new renewal license.
   - **Out-of-State CCW Permits**: Added `📦 Move to History & Enter New License` button on each state permit card. Archives current license to history, clears active fields and photos, and keeps the section open for immediate entry of renewed permit details.
+- **Photo Zoom Lightbox Z-Index & Modal Stacking Fix**:
+  - Elevated `.photo-zoom-overlay` z-index from `1000` to `25000` (above `#priorPermitsViewerModal` at `10055` and `#historicalPermitModal` at `10060`), resolving the bug where clicking an archived permit card photo opened the lightbox hidden underneath the prior permits modal.
+  - Added `viewPriorPermitPhoto(id, side)` and `viewStatePermitPhoto(idx, side)` lookup functions, preventing huge base64 image strings from being interpolated into inline `onclick` HTML attributes.
+  - Elevated `.toast` z-index to `30000` so system notifications remain visible across all stacked modals.
+

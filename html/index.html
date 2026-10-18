@@ -684,7 +684,7 @@
       background: rgba(3, 6, 12, 0.94);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      z-index: 1000;
+      z-index: 25000;
       display: flex;
       flex-direction: column;
       opacity: 0;
@@ -704,7 +704,7 @@
       padding: 12px 20px;
       background: rgba(10, 15, 26, 0.92);
       border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-      z-index: 1020;
+      z-index: 25020;
       user-select: none;
       position: relative;
       pointer-events: auto;
@@ -726,7 +726,7 @@
       border-radius: 10px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       position: relative;
-      z-index: 1030;
+      z-index: 25030;
       pointer-events: auto;
     }
     .photo-zoom-btn {
@@ -809,7 +809,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 1020;
+      z-index: 25020;
       transition: all 0.15s ease;
       backdrop-filter: blur(6px);
       pointer-events: auto;
@@ -833,9 +833,9 @@
       padding: 6px 16px;
       font-size: 0.76rem;
       color: #94a3b8;
+      z-index: 25020;
       pointer-events: none;
       backdrop-filter: blur(6px);
-      z-index: 510;
       white-space: nowrap;
     }
 
@@ -968,7 +968,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      z-index: 999;
+      z-index: 30000;
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -6608,6 +6608,14 @@
       }
     }
 
+    function viewStatePermitPhoto(idx, side) {
+      const sp = (currentOtherStatePermits || [])[idx];
+      if (!sp) return;
+      const photo = side === 'front' ? sp.frontPhoto : sp.backPhoto;
+      if (!photo) return;
+      openPhotoZoomDirect(photo, `${sp.state || 'Out-of-State'} CCW Permit - ${side === 'front' ? 'Front' : 'Back'}`);
+    }
+
     function renderOtherStatePermits() {
       const tabsBar = document.getElementById('otherStateTabsBar');
       const panel = document.getElementById('otherStateActivePanel');
@@ -6719,7 +6727,7 @@
                 <span style="font-weight:700; font-size:0.82rem; color:#c4b5fd;">🪪 ${escapeHtml(sp.state)} Permit (Front)</span>
                 <span class="badge-tag" style="font-size:0.66rem; background:${sp.frontPhoto ? 'rgba(16,185,129,0.2)' : 'rgba(148,163,184,0.15)'}; color:${sp.frontPhoto ? '#34d399' : '#94a3b8'};">${sp.frontPhoto ? 'Photo On File' : 'No Photo'}</span>
               </div>
-              <div class="permit-card-preview-wrap" style="height:145px;" onclick="${sp.frontPhoto ? `openPhotoZoomDirect('${escapeHtml(sp.frontPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Front')` : ''}">
+              <div class="permit-card-preview-wrap" style="height:145px;" onclick="${sp.frontPhoto ? `viewStatePermitPhoto(${idx}, 'front')` : ''}">
                 ${sp.frontPhoto
                   ? `<img src="${escapeHtml(sp.frontPhoto)}" class="permit-card-img" style="display:block;" alt="${escapeHtml(sp.state)} Front">`
                   : `<div class="permit-card-placeholder"><span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">No Front Photo</span><span style="font-size:0.7rem; color:var(--text-dim);">Take photo or upload</span></div>`
@@ -6729,7 +6737,7 @@
                 <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('front', 'camera')" style="padding:3px 8px; font-size:0.73rem;">📷 Camera</button>
                 <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('front', 'library')" style="padding:3px 8px; font-size:0.73rem;">📁 Library</button>
                 ${sp.frontPhoto ? `
-                  <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(sp.frontPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Front')" style="padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
+                  <button type="button" class="btn btn-secondary" onclick="viewStatePermitPhoto(${idx}, 'front')" style="padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
                   <button type="button" class="btn btn-secondary" onclick="rotateStatePermitPhoto(${idx}, 'front')" style="padding:3px 8px; font-size:0.73rem;">⟳ Rotate</button>
                   <button type="button" class="btn btn-ghost" onclick="deleteStatePermitPhoto(${idx}, 'front')" style="color:#fb7185; padding:3px 6px; font-size:0.73rem;">✕</button>
                 ` : ''}
@@ -6742,7 +6750,7 @@
                 <span style="font-weight:700; font-size:0.82rem; color:#c4b5fd;">🪪 ${escapeHtml(sp.state)} Permit (Back)</span>
                 <span class="badge-tag" style="font-size:0.66rem; background:${sp.backPhoto ? 'rgba(16,185,129,0.2)' : 'rgba(148,163,184,0.15)'}; color:${sp.backPhoto ? '#34d399' : '#94a3b8'};">${sp.backPhoto ? 'Photo On File' : 'No Photo'}</span>
               </div>
-              <div class="permit-card-preview-wrap" style="height:145px;" onclick="${sp.backPhoto ? `openPhotoZoomDirect('${escapeHtml(sp.backPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Back')` : ''}">
+              <div class="permit-card-preview-wrap" style="height:145px;" onclick="${sp.backPhoto ? `viewStatePermitPhoto(${idx}, 'back')` : ''}">
                 ${sp.backPhoto
                   ? `<img src="${escapeHtml(sp.backPhoto)}" class="permit-card-img" style="display:block;" alt="${escapeHtml(sp.state)} Back">`
                   : `<div class="permit-card-placeholder"><span style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">No Back Photo</span><span style="font-size:0.7rem; color:var(--text-dim);">Take photo or upload</span></div>`
@@ -6752,7 +6760,7 @@
                 <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('back', 'camera')" style="padding:3px 8px; font-size:0.73rem;">📷 Camera</button>
                 <button type="button" class="btn btn-secondary" onclick="triggerStatePermitPhotoUpload('back', 'library')" style="padding:3px 8px; font-size:0.73rem;">📁 Library</button>
                 ${sp.backPhoto ? `
-                  <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(sp.backPhoto)}', '${escapeHtml(sp.state)} CCW Permit - Back')" style="padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
+                  <button type="button" class="btn btn-secondary" onclick="viewStatePermitPhoto(${idx}, 'back')" style="padding:3px 8px; font-size:0.73rem;">🔍 Zoom</button>
                   <button type="button" class="btn btn-secondary" onclick="rotateStatePermitPhoto(${idx}, 'back')" style="padding:3px 8px; font-size:0.73rem;">⟳ Rotate</button>
                   <button type="button" class="btn btn-ghost" onclick="deleteStatePermitPhoto(${idx}, 'back')" style="color:#fb7185; padding:3px 6px; font-size:0.73rem;">✕</button>
                 ` : ''}
@@ -7242,6 +7250,16 @@
       document.getElementById('priorPermitsViewerModal').classList.remove('active');
     }
 
+    function viewPriorPermitPhoto(id, side) {
+      const item = (currentCcwPermitHistory || []).find(h => h.id === id);
+      if (!item) return;
+      const photo = side === 'front' ? item.frontPhoto : item.backPhoto;
+      if (!photo) return;
+      const stateLabel = item.state || 'California';
+      const periodLabel = item.period || 'Prior Permit';
+      openPhotoZoomDirect(photo, `${stateLabel} (${periodLabel}) - ${side === 'front' ? 'Front' : 'Back'}`);
+    }
+
     function renderCcwPermitHistory() {
       updatePriorPermitsCompactBar();
       const container = document.getElementById('ccwPermitHistoryContainer');
@@ -7300,9 +7318,9 @@
         ? `<div class="permit-card-box">
              <div class="permit-card-box-header">
                <span style="font-weight:700; font-size:0.82rem; color:#38bdf8;">🪪 Front of Archived Card</span>
-               <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(item.frontPhoto)}', '${escapeHtml(item.period)} Permit - Front')" style="padding:2px 8px; font-size:0.7rem;">🔍 Full Screen</button>
+               <button type="button" class="btn btn-secondary" onclick="viewPriorPermitPhoto('${escapeHtml(item.id)}', 'front')" style="padding:2px 8px; font-size:0.7rem;">🔍 Full Screen</button>
              </div>
-             <div class="permit-card-preview-wrap" style="height:175px;" onclick="openPhotoZoomDirect('${escapeHtml(item.frontPhoto)}', '${escapeHtml(item.period)} Permit - Front')">
+             <div class="permit-card-preview-wrap" style="height:175px;" onclick="viewPriorPermitPhoto('${escapeHtml(item.id)}', 'front')">
                <img src="${escapeHtml(item.frontPhoto)}" class="permit-card-img" style="display:block;" alt="Archived Front">
              </div>
            </div>`
@@ -7312,9 +7330,9 @@
         ? `<div class="permit-card-box">
              <div class="permit-card-box-header">
                <span style="font-weight:700; font-size:0.82rem; color:#38bdf8;">🪪 Back of Archived Card</span>
-               <button type="button" class="btn btn-secondary" onclick="openPhotoZoomDirect('${escapeHtml(item.backPhoto)}', '${escapeHtml(item.period)} Permit - Back')" style="padding:2px 8px; font-size:0.7rem;">🔍 Full Screen</button>
+               <button type="button" class="btn btn-secondary" onclick="viewPriorPermitPhoto('${escapeHtml(item.id)}', 'back')" style="padding:2px 8px; font-size:0.7rem;">🔍 Full Screen</button>
              </div>
-             <div class="permit-card-preview-wrap" style="height:175px;" onclick="openPhotoZoomDirect('${escapeHtml(item.backPhoto)}', '${escapeHtml(item.period)} Permit - Back')">
+             <div class="permit-card-preview-wrap" style="height:175px;" onclick="viewPriorPermitPhoto('${escapeHtml(item.id)}', 'back')">
                <img src="${escapeHtml(item.backPhoto)}" class="permit-card-img" style="display:block;" alt="Archived Back">
              </div>
            </div>`
