@@ -3,6 +3,8 @@ services:
     image: nginx:alpine
     container_name: ArmoryVault_8186
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges: true
     ports:
       - "8186:80"
     volumes:
@@ -17,6 +19,8 @@ services:
     image: python:3.12-alpine
     container_name: ArmoryVault_api
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges: true
     working_dir: /app
     volumes:
       - .:/app:ro
