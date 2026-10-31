@@ -21,6 +21,7 @@ import ssl
 import smtplib
 import zipfile
 import io
+import ipaddress
 import html as html_lib
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
@@ -884,28 +885,34 @@ def _validate_upload_signature(raw_bytes, allow_pdf=False):
 MAX_REQUEST_BODY_BYTES = 26 * 1024 * 1024  # 26 MB ceiling
 
 
+ALLOWED_ORIGIN_NETS = [
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("100.64.0.0/10"),
+]
+
+
 class RequestHandler(BaseHTTPRequestHandler):
     def is_origin_allowed(self, origin):
         if not origin:
             return True
-        origin_clean = origin.lower().split("://")[-1].split(":")[0]
-        if origin_clean in ["localhost", "127.0.0.1", "dockermonster"]:
+        try:
+            parsed = urlparse(origin)
+            host = (parsed.hostname or "").lower().strip("[]")
+        except Exception:
+            return False
+        if not host:
+            return False
+        if host in ("localhost", "dockermonster") or host.endswith((".local", ".lan", ".home")):
             return True
-        if origin_clean.endswith(".local") or origin_clean.endswith(".lan"):
-            return True
-        # RFC1918 and Tailscale CGNAT
-        if origin_clean.startswith("192.168.") or origin_clean.startswith("10."):
-            return True
-        if origin_clean.startswith("172."):
-            try:
-                second = int(origin_clean.split(".")[1])
-                if 16 <= second <= 31:
-                    return True
-            except ValueError:
-                pass
-        if origin_clean.startswith("100."):  # Tailscale
-            return True
-        return False
+        try:
+            ip = ipaddress.ip_address(host)
+            return any(ip in net for net in ALLOWED_ORIGIN_NETS)
+        except ValueError:
+            return False
 
     def enforce_origin_check(self):
         origin = self.headers.get("Origin")
